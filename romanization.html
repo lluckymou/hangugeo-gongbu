@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hangul Romanization</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700&family=Cormorant:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>한</text></svg>">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 700px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        h1 {
+            text-align: center;
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .input-display {
+            background: linear-gradient(135deg, #f5e6d3 0%, #ede0ce 100%);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 20px;
+            min-height: 120px;
+            box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .hangul-input {
+            width: 100%;
+            background: transparent;
+            border: none;
+            outline: none;
+            font-size: 36px;
+            color: #4a4a4a;
+            font-family: 'Nanum Myeongjo', serif;
+            font-weight: 400;
+            text-align: left;
+            resize: none;
+            line-height: 1.6;
+            min-height: 80px;
+        }
+
+        .hangul-input::placeholder {
+            color: #8b7d6b;
+            opacity: 0.6;
+        }
+
+        .convert-button-wrapper {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        .btn-convert {
+            padding: 15px 40px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-convert:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-convert:active {
+            transform: translateY(0);
+        }
+
+        .output-display {
+            background: #ffffff;
+            border: 2px solid #e2e8f0;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 25px;
+            min-height: 120px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .romanized-output {
+            width: 100%;
+            background: transparent;
+            border: none;
+            outline: none;
+            font-size: 32px;
+            color: #2d3748;
+            font-family: 'Cormorant', serif;
+            font-weight: 500;
+            text-align: left;
+            resize: none;
+            line-height: 1.6;
+            min-height: 80px;
+        }
+
+        .romanized-output::placeholder {
+            color: #a0aec0;
+            opacity: 0.7;
+        }
+
+        .control-group {
+            margin-bottom: 25px;
+        }
+
+        .control-label {
+            display: block;
+            margin-bottom: 10px;
+            color: #333;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 14px;
+            background: white;
+            cursor: pointer;
+            transition: border-color 0.3s ease;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+
+        select:hover {
+            border-color: #667eea;
+        }
+
+        select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .custom-rules-container {
+            margin-top: 15px;
+        }
+
+        .custom-rules-container.visible {
+            display: block;
+        }
+
+        .custom-rules-textarea {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: 'Courier New', monospace;
+            resize: none;
+            max-height: 150px;
+            transition: border-color 0.3s ease;
+        }
+
+        .custom-rules-textarea:hover {
+            border-color: #667eea;
+        }
+
+        .custom-rules-textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .custom-rules-textarea::placeholder {
+            color: #a0aec0;
+        }
+
+        .info-box {
+            background: #edf2f7;
+            border-left: 4px solid #667eea;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 20px;
+            font-size: 14px;
+            color: #555;
+            line-height: 1.6;
+        }
+
+        .footer {
+            margin-top: 30px;
+            text-align: center;
+            color: white;
+            font-size: 14px;
+            padding: 20px;
+        }
+
+        .footer a {
+            color: white;
+            text-decoration: none;
+            font-weight: 600;
+            transition: opacity 0.3s ease;
+        }
+
+        .footer a:hover {
+            opacity: 0.8;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 25px;
+            }
+
+            h1 {
+                font-size: 24px;
+            }
+
+            .hangul-input {
+                font-size: 28px;
+            }
+
+            .romanized-output {
+                font-size: 26px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🇰🇷 Hangul Romanization</h1>
+        <p class="subtitle">Convert Korean Hangul to Romanized text</p>
+
+        <div class="input-display">
+            <textarea 
+                class="hangul-input" 
+                id="hangulInput" 
+                placeholder="한글을 입력하세요..."
+                rows="3"
+            ></textarea>
+        </div>
+
+        <div class="convert-button-wrapper">
+            <button class="btn-convert" id="convertBtn">
+                ⇄ Convert to Romanization
+            </button>
+        </div>
+
+        <div class="output-display">
+            <textarea 
+                class="romanized-output" 
+                id="romanizedOutput" 
+                placeholder="Romanized text will appear here..."
+                rows="3"
+            ></textarea>
+        </div>
+
+        <div class="control-group">
+            <label class="control-label" for="conversionMethod">Conversion Method</label>
+            <select id="conversionMethod">
+                <option value="mccune" selected>McCune-Reischauer</option>
+                <option value="revised">Revised-like</option>
+                <option value="wiri">Wiri-MR</option>
+                <option value="custom">Custom</option>
+            </select>
+        </div>
+
+        <div class="custom-rules-container" id="customRulesContainer">
+            <label class="control-label" for="customRules">Custom Conversion Rules (JSON)</label>
+            <textarea
+                readonly
+                class="custom-rules-textarea" 
+                id="customRules"
+            ></textarea>
+        </div>
+
+        <div class="info-box">
+            💡 <strong>Tip:</strong> Type or paste Korean Hangul text in the top box, select your preferred romanization system, and click Convert to see the romanized output!
+        </div>
+    </div>
+
+    <div class="footer">
+        <a href="index.html">🇰🇷 한국말 공부</a>ㅤ•ㅤBuilt with care by <a href="https://github.com/lluckymou" target="_blank">llucmou 🌲</a>
+    </div>
+
+    <script src="hangul.js"></script>
+    <script src="script.js"></script>
+
+    <script>
+        const conversionMethodSelect = document.getElementById('conversionMethod');
+        const customRulesContainer = document.getElementById('customRulesContainer');
+        const customRules = document.getElementById('customRules');
+
+        const wiriJson = {
+            "symbols": {
+                "aspiration": "›",
+                "pause": "."
+            },
+            "ㄱ": ["g̈", "k", "ng̈", "lg̈", "k"],
+            "ㄲ": ["kk", "k", "ng̈", "lg̈", "k"],
+            "ㄴ": ["n", "n", "n", "l", "n"],
+            "ㄷ": ["d", "t", "n", "nn", "t"],
+            "ㄸ": "tt",
+            "ㄹ": ["r", "l", "l", "l", "l"],
+            "ㅁ": ["m", "m", "m", "m", "m"],
+            "ㅂ": ["b", "p", "m", "m", "p"],
+            "ㅃ": "pp",
+            "ㅅ": ["s", "t", "n", "t", "t"],
+            "ㅆ": ["ss", "t", "n", "t", "t"],
+            "ㅇ": ["", "ng̈", "ng̈", "ng̈", "ng̈"],
+            "ㅈ": ["dj", "t", "n", "t", "t"],
+            "ㅉ": "ttch",
+            "ㅊ": ["tch›", "t", "n", "t", "t"],
+            "ㅋ": ["k›", "k", "ng̈", "k", "k"],
+            "ㅌ": ["t›", "t", "n", "t", "t"],
+            "ㅍ": ["p›", "p", "m", "p", "p"],
+            "ㅎ": ["h", "t", "n", "t", "t"],
+            "ㅏ": ["", "á"],
+            "ㅐ": ["", "é"],
+            "ㅑ": "yá",
+            "ㅒ": "yé",
+            "ㅓ": ["", "ó"],
+            "ㅔ": ["", "e"],
+            "ㅕ": "yó",
+            "ㅖ": "yê",
+            "ㅗ": ["wá", "wé", "ôê", "ô"],
+            "ㅛ": "yô",
+            "ㅜ": ["wó", "wí", "wê", "ú"],
+            "ㅠ": "yú",
+            "ㅡ": ["âi", "i", "ê", "â"],
+            "ㅣ": ["", "í"],
+            "rieulChecker": "function(prev, fol, fol2) { if (this.isConsonant(prev)) return 'n'; if ((this.isVowel(prev) && this.isVowel(fol)) || (fol === 'ㅇ' || fol ==='ㅎ')) return 'r'; if (['ㄴ', 'ㄹ'].includes(prev)) return 'l'; if (this.notHangeul(prev)) return 'r'; return 'l'; }",
+            "ieungChecker": "function(prev, fol, fol2) { if (this.isVowel(fol)) return ''; return 'ng̈'; }",
+            "kiyeokChecker": "function(prev, fol, fol2) { if (['ㄴ', 'ㄹ', 'ㅁ'].includes(fol)) return 'ng̈'; if (this.isVowel(fol) || fol === 'ㅇ') return 'g̈'; return 'k'; }",
+            "digeudChecker": "function(prev, fol, fol2) { if (['ㄴ', 'ㄹ', 'ㅁ'].includes(fol)) return 'n'; if (this.isVowel(fol) || fol === 'ㅇ') return 'd'; return 't'; }",
+            "bieubChecker": "function(prev, fol, fol2) { if (['ㄴ', 'ㄹ', 'ㅁ'].includes(fol)) return 'm'; if (this.isVowel(fol) || fol === 'ㅇ') return 'b'; return 'p'; }",
+            "nieunChecker": "function(prev, fol, fol2) { if (fol === 'ㄹ' || prev === 'ㄹ') return 'l'; return 'n'; }",
+            "ieungChecker": "function(prev, fol, fol2) { if (this.isVowel(fol)) return ''; return 'ng̈'; }"
+        };
+
+        const revisedJson = {
+            "symbols": {"aspiration":"","pause":""},
+            "ㄱ":["g","k","ng","k","k"],
+            "ㄲ":["kk","kk","ng","kk","kk"],
+            "ㄴ":["n","n","m","l","n"],
+            "ㄷ":["d","t","n","t","t"],
+            "ㄸ":["tt","tt","tt","tt","tt"],
+            "ㄹ":["r","l","l","l","l"],
+            "ㅁ":"m",
+            "ㅂ":["b","p","m","m","p"],
+            "ㅃ":["pp","pp","pp","pp","pp"],
+            "ㅅ":["s","t","n","t","t"],
+            "ㅆ":["ss","ss","ss","ss","ss"],
+            "ㅇ":["","ng","ng","ng","ng"],
+            "ㅈ":["j","t","n","t","t"],
+            "ㅉ":["jj","jj","jj","jj","jj"],
+            "ㅊ":["ch","t","n","t","t"],
+            "ㅋ":["k","k","ng","k","k"],
+            "ㅌ":["t","t","n","t","t"],
+            "ㅍ":["p","p","m","p","p"],
+            "ㅎ":["h","","h","h","h"],
+            "ㅏ":["","a"],
+            "ㅐ":["","ae"],
+            "ㅑ":"ya",
+            "ㅒ":"yae",
+            "ㅓ":["","eo"],
+            "ㅔ":["","e"],
+            "ㅕ":"yeo",
+            "ㅖ":"ye",
+            "ㅗ":["wa","wae","oe","o"],
+            "ㅛ":"yo",
+            "ㅜ":["wo","wi","we","u"],
+            "ㅠ":"yu",
+            "ㅡ":["eui","ui","ui","eu"],
+            "ㅣ":["","i"],
+            "rieulChecker": "function(prev, fol, fol2) { if (this.isConsonant(prev)) return 'n'; if ((this.isVowel(prev) && this.isVowel(fol)) || (fol === 'ㅇ' || fol ==='ㅎ')) return 'r'; if (['ㄴ', 'ㄹ'].includes(prev)) return 'l'; if (this.notHangeul(prev)) return 'r'; return 'l'; }",
+            "ieungChecker": "function(prev, fol, fol2) { if (this.isVowel(fol)) return ''; return 'ng'; }",
+            "kiyeokChecker": "function(prev, fol, fol2) { if (['ㄴ', 'ㄹ', 'ㅁ'].includes(fol)) return 'ng'; if (this.isVowel(fol) || fol === 'ㅇ') return 'g'; return 'k'; }",
+            "digeudChecker": "function(prev, fol, fol2) { if (['ㄴ', 'ㄹ', 'ㅁ'].includes(fol)) return 'n'; if (this.isVowel(fol) || fol === 'ㅇ') return 'd'; return 't'; }",
+            "bieubChecker": "function(prev, fol, fol2) { if (['ㄴ', 'ㄹ', 'ㅁ'].includes(fol)) return 'm'; if (this.isVowel(fol) || fol === 'ㅇ') return 'b'; return 'p'; }",
+            "nieunChecker": "function(prev, fol, fol2) { if (fol === 'ㄹ' || prev === 'ㄹ') return 'l'; return 'n'; }",
+            "ieungChecker": "function(prev, fol, fol2) { if (this.isVowel(fol)) return ''; return 'ng'; }"
+        }
+
+        conversionMethodSelect.addEventListener('change', function() {
+            const method = this.value;
+
+            if (method === 'wiri') {
+                customRules.value = JSON.stringify(wiriJson, null, 2);
+                customRules.readOnly = true;
+                customRules.style.backgroundColor = "#f8f9fa";
+            } 
+            else if (method === 'revised') {
+                customRules.value = JSON.stringify(revisedJson, null, 2);
+                customRules.readOnly = true;
+                customRules.style.backgroundColor = "#f8f9fa";
+            } 
+            else if (method === 'mccune') {
+                customRules.value = '';
+                customRules.readOnly = true;
+                customRules.style.backgroundColor = "#f8f9fa";
+            } 
+            else if (method === 'custom') {
+                customRules.readOnly = false;
+                customRules.style.backgroundColor = "white";
+            }
+
+            customRules.style.height = 'auto';
+            customRules.style.height = customRules.scrollHeight + 'px';
+        });
+
+        function autoResize(textarea) {
+            textarea.style.height = 'auto';
+            textarea.style.height = textarea.scrollHeight + 'px';
+        }
+
+        const hangulInput = document.getElementById('hangulInput');
+        const romanizedOutput = document.getElementById('romanizedOutput');
+
+        hangulInput.addEventListener('input', function() {
+            autoResize(this);
+        });
+    </script>
+</body>
+</html>
