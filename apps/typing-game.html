@@ -255,7 +255,7 @@ body{
 #title-footer a:hover{ text-decoration:underline; }
 
 /* ===== CANVAS ===== */
-#gc{ position:fixed; inset:0; pointer-events:none; z-index:1; }
+#gc{ position:fixed; inset:0; pointer-events:none; z-index:51; }
 
 /* ===== HUD ===== */
 #hud{
@@ -356,6 +356,7 @@ body{
   position:fixed; inset:0;
   display:flex; align-items:center; justify-content:center;
   pointer-events:none; z-index:60;
+  /* will be overridden in JS for mobile keyboard */
 }
 #announce-txt{
   font-size:clamp(2rem,7vw,4.5rem); color:#fff;
@@ -373,12 +374,13 @@ body{
 }
 @keyframes cffall{ to{ transform:translateY(110vh) rotate(720deg); opacity:0; } }
 #well-done{
-  position:fixed; top:50%; left:50%;
-  transform:translate(-50%,-50%);
+  position:fixed; left:50%;
+  transform:translateX(-50%) translateY(-50%);
   font-size:clamp(2rem,7vw,4rem); color:#fff;
   text-shadow:0 0 30px rgba(120,220,255,.9);
   opacity:0; transition:opacity .45s;
   z-index:56; pointer-events:none; white-space:nowrap;
+  top:50%; /* overridden by JS on mobile */
 }
 #well-done.on{ opacity:1; }
 </style>
@@ -752,6 +754,21 @@ const hsBest   = document.getElementById('hs-best');
 const ringArc  = document.getElementById('ring-arc');
 const annTxt   = document.getElementById('announce-txt');
 const wellDone = document.getElementById('well-done');
+const annEl    = document.getElementById('announce');
+
+// Keep announce messages centred within the *visible* viewport
+// (accounts for mobile software keyboard pushing the visual center down)
+function updateAnnounceCenterY() {
+  const vp  = window.visualViewport;
+  const top = vp ? vp.offsetTop : 0;
+  const h   = vp ? vp.height    : window.innerHeight;
+  const mid = top + h / 2;
+  // #announce: reposition its flex container so the midpoint aligns
+  annEl.style.top    = top + 'px';
+  annEl.style.height = h   + 'px';
+  annEl.style.bottom = 'auto';
+  wellDone.style.top = mid + 'px';
+}
 const cfxEl    = document.getElementById('cfx');
 const spellIco = document.getElementById('spell-ico');
 
@@ -1358,10 +1375,16 @@ function drawMonsters() {
     ctx.translate(Math.sin(m.wob) * 3, 0);
     ctx.scale(m.scl, m.scl);
     if (m.flash > 0) ctx.filter = `brightness(${1 + m.flash * 2.5})`;
+    // Shadow pulses with the walking wobble for a grounded feel
+    const shadowPulse = 0.5 + 0.5 * Math.abs(Math.sin(m.wob));
+    ctx.shadowColor = 'rgba(0,0,0,0.82)';
+    ctx.shadowBlur  = 12 + shadowPulse * 10;
+    ctx.shadowOffsetY = 3 + shadowPulse * 4;
     ctx.font = `${m.size}px serif`;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText(m.emoji, 0, 0);
+    ctx.shadowBlur = 0; ctx.shadowOffsetY = 0;
     ctx.filter = 'none';
 
     // Hearts (above emoji)
@@ -1375,7 +1398,6 @@ function drawMonsters() {
   }
 
   // Pass 2: word labels — drawn on top of all sprites
-  // High z by drawing last in this function
   for (const m of G.monsters) {
     if (m.dead) continue;
     ctx.save();
@@ -1384,19 +1406,23 @@ function drawMonsters() {
     const heartSz = Math.max(8, 13 - m.maxHp * 0.5);
     const heartY  = -(m.size * 0.6 + 14);
     const wordY   = heartY - heartSz - 7;
-    const wordSz  = Math.max(11, 16 - (m.word?.length || 0) * 0.2);
+    const wordSz  = Math.max(13, 19 - (m.word?.length || 0) * 0.2);
 
     ctx.font      = `bold ${wordSz}px "Noto Sans KR", sans-serif`;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
+    // Strong shadow for readability over HUD
+    ctx.shadowColor   = 'rgba(0,0,0,1)';
+    ctx.shadowBlur    = 6;
+    ctx.shadowOffsetY = 2;
     ctx.strokeStyle = 'rgba(0,0,0,.98)';
-    ctx.lineWidth   = 4;
+    ctx.lineWidth   = 5;
     ctx.fillStyle   = m.type === 'boss' ? '#ffd700' : '#fff';
 
     if (m.word) {
-      // Draw below monster instead of above
       const belowY = m.size * 0.6 + 18;
       ctx.strokeText(m.word, 0, belowY);
+      ctx.shadowBlur = 0;
       ctx.fillText  (m.word, 0, belowY);
     }
     ctx.restore();
@@ -1637,6 +1663,7 @@ window.addEventListener('resize', () => {
 ================================================================ */
 if ('visualViewport' in window) {
   window.visualViewport.addEventListener('resize', () => {
+    updateAnnounceCenterY();
     if (G.phase !== 'play') return;
     const vvh = window.visualViewport.height;
     const oldVH = G.vH;
