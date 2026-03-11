@@ -6,7 +6,7 @@
 <title>한국어 타이핑</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⌨️</text></svg>">
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Jua&family=Noto+Sans+KR:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Jua&family=Noto+Sans+KR:wght@400;700&family=Song+Myung&family=Nanum+Myeongjo:wght@400;700&display=swap');
 
 :root {
   --bg-top:#c8c8d4; --bg-bot:#9898a8;
@@ -87,20 +87,43 @@ body{
 .scard.wide{ grid-column:1/-1; }
 
 /* lives card */
-#scard-lives{ display:flex; flex-direction:column; }
-#scard-lives h3{ margin-bottom:auto; }
+.gopts-grid{ display:flex; flex-direction:column; gap:8px; max-height:210px; overflow-y:auto; }
+.gopts-grid::-webkit-scrollbar{ width:4px; }
+.gopts-grid::-webkit-scrollbar-thumb{ background:rgba(0,0,0,.15); border-radius:2px; }
+.gopt-card{
+  background:#fff; border:1px solid rgba(0,0,0,.08);
+  border-radius:10px; padding:10px 14px;
+  display:flex; align-items:center; justify-content:space-between;
+  gap:8px; width:100%; box-sizing:border-box;
+}
+.gopt-label{ font-size:.62rem; text-transform:uppercase; letter-spacing:1.5px; color:#555; text-align:center; }
 .lives-row{
   display:flex; align-items:center;
-  justify-content:center; gap:10px; flex:1;
+  justify-content:center; gap:10px;
 }
 .lives-row label{ font-size:1rem; opacity:.65; }
 #inp-lives{
   width:68px; padding:6px 8px;
-  background:#fff; border:1px solid #ddd;
+  background:#f7f7fa; border:1px solid #ddd;
   border-radius:8px; color:#2b2b2b;
   font-family:inherit; font-size:1.2rem; text-align:center;
 }
-#lives-max{ font-size:.68rem; color:#646464; text-align:center; margin-top:auto; }
+/* toggle switch */
+.gopt-toggle{ display:flex; align-items:center; cursor:pointer; }
+.gopt-toggle input{ display:none; }
+.gopt-track{
+  width:38px; height:22px; border-radius:11px;
+  background:#ddd; position:relative; transition:background .2s;
+  display:block;
+}
+.gopt-toggle input:checked ~ .gopt-track{ background:#667eea; }
+.gopt-thumb{
+  position:absolute; top:3px; left:3px;
+  width:16px; height:16px; border-radius:50%;
+  background:#fff; box-shadow:0 1px 3px rgba(0,0,0,.25);
+  transition:transform .2s;
+}
+.gopt-toggle input:checked ~ .gopt-track .gopt-thumb{ transform:translateX(16px); }
 #pl-lives{ font-size:.88rem; margin-top:8px; order:99; max-width:880px; }
 
 /* hero picker */
@@ -457,7 +480,7 @@ body{
             <label>Skin:</label>
             <div id="skin-btns"></div>
           </div>
-          <div class="skin-group">
+          <div class="skin-group" id="gender-group">
             <label>Gender:</label>
             <div id="gender-btns"></div>
           </div>
@@ -470,14 +493,35 @@ body{
         <div class="wg-list" id="wg-pick"></div>
       </div>
 
-      <!-- Starting lives -->
-      <div class="scard" id="scard-lives">
-        <h3>Starting Lives</h3>
-        <div class="lives-row">
-          <label>❤️ ×</label>
-          <input type="number" id="inp-lives" min="1" max="100" value="5">
+      <!-- Game Options -->
+      <div class="scard" id="scard-options">
+        <h3>Game Options</h3>
+        <div class="gopts-grid">
+
+          <div class="gopt-card">
+            <div class="gopt-label">❤️ Starting Lives</div>
+            <div class="lives-row">
+              <input type="number" id="inp-lives" min="1" max="100" value="10">
+            </div>
+          </div>
+
+          <div class="gopt-card">
+            <div class="gopt-label">🔤 Varying Fonts</div>
+            <label class="gopt-toggle">
+              <input type="checkbox" id="chk-fonts" checked>
+              <span class="gopt-track"><span class="gopt-thumb"></span></span>
+            </label>
+          </div>
+
+          <div class="gopt-card">
+            <div class="gopt-label">🌤️ Weather</div>
+            <label class="gopt-toggle">
+              <input type="checkbox" id="chk-weather" checked>
+              <span class="gopt-track"><span class="gopt-thumb"></span></span>
+            </label>
+          </div>
+
         </div>
-        <p id="lives-max">Max 100</p>
       </div>
 
     </div>
@@ -769,22 +813,22 @@ const WORDS = RAW.map(t => ({ text: t, d: countJamo(t) }));
 const MONSTERS = ['💩','👹','👺','👻','👽','👾','🤖','🧌','🧟','🧟‍♀️','🕷️','🦟','🦠','🪳','🐀','🐁','🎃','🦇','🦅','🥷🏼'];
 
 const WEAPONS = {
-  magic:     { label: 'Magic',      e:['🔮','🪄','💫','🌀','⚡','🔥','❄️','🌪️','🪨','🧿','💠','🌙','🕯️','☄️','🪐']},
+  magic:     { label: 'Magic',      e:['🔮','🪄','💫','🌀','⚡','🔥','❄️','🌪️','🧿','💠','🌙','🕯️','☄️','🪐']},
   love:      { label: 'Love',       e:['💘','❤️','💥','💖','💗','💓','💞','💕','🩷','🧡','💛','💚','💙','💜','🩵','🤍','🖤'] },
-  fairy:     { label: 'Fairy',      e:['🧚','🦄','🌈','✨','💫','🪄','🍄','🧁','🫧','🦋','🌸','🌟','🪩','🪞','🪅']},
-  weapons:   { label: 'Weapons',    e:['🗡️','🪓','🔪','🏹','💣','🧨','⛏️','🪚','🔨','🛡️','🪃','🗡️']},
-  fast_food: { label: 'Fast Food',  e:['🍔','🍟','🥤','🍗','🌭','🍕','🌯','🥪','🍿','🧇','🥓','🍖','🥯','🍔','🍟']},
-  ocean:     { label: 'Ocean',      e:['🌊','🐙','🦈','🐬','🐟','🐠','🦑','🦀','🦞','🐚','🪸','🪼','🐳','🐋','🦭'] },
-  sweets:    { label: 'Sweets',     e:['🍭','🍬','🍫','🍩','🍪','🧁','🍰','🍦','🍧','🍨','🍮','🍯','🫧'] },
+  fairy:     { label: 'Fairy',      e:['🧚','🦄','🌈','✨','💫','🪄','🍄','🫧','🦋','🌸','🌟','🪩','🪞','🪅']},
+  weapons:   { label: 'Weapons',    e:['🗡️','🪓','🔪','💣','🧨','⛏️','🪚','🔨','🛡️','🪃','🗡️']},
+  fast_food: { label: 'Fast Food',  e:['🍔','🍟','🥤','🍗','🌭','🍕','🌯','🥪','🍿','🧇','🥓','🍖','🥯']},
+  ocean:     { label: 'Ocean',      e:['🌊','🐙','🦈','🐬','🐟','🐠','🦑','🦀','🦞','🐚','🪸','🪼','🐋','🦭'] },
+  sweets:    { label: 'Sweets',     e:['🍭','🍬','🍫','🍩','🍪','🧁','🍰','🍦','🍧','🍨','🍮','🍯'] },
   bakery:    { label: 'Bakery',     e:['🥐','🍞','🥖','🥨','🥯','🧇','🥞','🥧','🍪','🧁','🍰','🥪','🧈'] },
-  hearts:    { label: 'Hearts',     e:['❤️','💖','💗','💓','💞','💕','💘','💝','💟','🩷','🩵','💜','💛','🧡','🩶'] },
   elements:  { label: 'Elements',   e:['🔥','💧','💨','🪨','❄️','⚡','🌪️','🧊','☄️','🌩️','🌈','🌊'] },
-  hulk:      { label: 'Hulk',       e:['💥','🏠','🏢','🏬','🏭','🚗','🚙','🚌','🚚','🛻','🪨','🌳','🏛️','🚜'] },
-  fire:      { label: 'Fire',       e:['🔥','🌋','🧨','💥','🌶️','☄️','🪔','🏮','🔦','🕯️','💣'] },
-  ice:       { label: 'Ice',        e:['❄️','🧊','🏔️','🌨️','🥶','🍧','🧿','🪨','⛄','🧊'] },
+  hulk:      { label: 'Hulk',       e:['🏠','🏢','🏬','🏭','🚗','🚙','🚌','🚚','🛻','🪨','🌳','🏛️','🚜','🛴','🚲','🛺','✈️','🏰','🏯','🎡','🚧','⚓️','🚏','🚢','🚦','🤸','🪑','🛁','⚱️','📪'] },
+  fire:      { label: 'Fire',       e:['🔥','🧨','💥','☄️','🕯️','💣'] },
+  ice:       { label: 'Ice',        e:['❄️','🧊','🏔️','🌨️','⛄'] },
   animals:   { label: 'Animals',    e:['🐶','🐱','🐯','🦁','🐘','🦒','🐵','🐸','🐍','🦅','🐝','🦋','🦍','🐺'] },
-  vehicles:  { label: 'Vehicles',   e:['🚗','🚙','🚌','🚚','🏎️','🚜','🛻','🏍️','🚲','🛵','✈️','🚀','🛸','🚁'] },
-  cyber:     { label: 'Cyber Hack', e:['💻','🖥️','⌨️','🖱️','💾','📀','🔌','📡','🛰️','🤖','🦾','🔋','🕹️','🎮','📱','💿'] },
+  vehicles:  { label: 'Vehicles',   e:['🚗','🚙','🚌','🚚','🏎️','🚜','🛻','🏍️','🚲','🛵','✈️','🚁'] },
+  cyber:     { label: 'Cyber',      e:['💻','🖥️','⌨️','🖱️','💾','📀','🔌','📡','🛰️','🤖','🦾','🔋','🕹️','🎮','📱','💿'] },
+  athlete:   { label: 'Athlete',    e:['⚽️','🏀','🏈','⚾️','🥎','🏐','🏉','🥏','🎱'] },
 };
 
 /* Hero definitions: base emoji, whether it supports skin tones, gender variants.
@@ -902,6 +946,7 @@ const G = {
   // special flags
   frozen: false, freezeTimer: 0,
   godMode: false, autoShoot: false,
+  varyFonts: true, weatherEnabled: true,
 };
 
 /* ================================================================
@@ -1018,6 +1063,9 @@ function updateSkinRow() {
   const def = _selHeroDef;
   skinRow.style.display   = (def.hasSkin || def.hasGender) ? 'flex' : 'none';
   skinBtns.style.display  = def.hasSkin   ? '' : 'none';
+  // Hide the entire gender group (label + buttons) when no gender variants
+  const genderGroup = document.getElementById('gender-group');
+  if (genderGroup) genderGroup.style.display = def.hasGender ? 'flex' : 'none';
   genderBtns.style.display = def.hasGender ? '' : 'none';
   // reset selection visuals
   skinBtns.querySelectorAll('.skin-btn').forEach((b,i)  => b.classList.toggle('sel', i===0));
@@ -1490,6 +1538,7 @@ const WEATHER_WEIGHTS = {
 };
 
 function rollWeather(wn) {
+  if (!G.weatherEnabled) return 'sunny';
   if (wn < 2) return 'sunny';
   const pool = [];
   const weights = { ...WEATHER_WEIGHTS };
@@ -1746,6 +1795,12 @@ function genWave(wn) {
    SPECIAL MONSTER TICK HELPERS
 ================================================================ */
 function tickSpecialMonster(m, dt, px, py) {
+  // Proximity factor: the closer to player, the less likely to shoot
+  // At 70% of screen height (far) = full chance; at 90%+ (close) = near zero
+  const yPct = m.y / G.vH; // 0 = top, 1 = bottom
+  // shootProb: 1.0 when yPct <= 0.55, linearly drops to 0.05 at yPct >= 0.85
+  const shootProb = Math.max(0.05, Math.min(1.0, 1.0 - (yPct - 0.55) / 0.30));
+
   // Archer: shoot arrows
   if (m.special === 'archer') {
     if (m.arrowCooldown === undefined) m.arrowCooldown = 0;
@@ -1753,21 +1808,21 @@ function tickSpecialMonster(m, dt, px, py) {
 
     if (m.shootPause > 0) {
       m.shootPause -= dt;
-      return; // frozen while shooting
+      return;
     }
 
     m.arrowCooldown -= dt;
-    // Only shoot once below 35% screen height and when no active arrow
     const hasArrow = G.monsters.some(a => a.parentId === m.id && !a.dead);
     if (m.arrowCooldown <= 0 && m.y > G.vH * 0.35 && !hasArrow) {
-      // Pause for 1 second, then spawn
-      m.shootPause = 1.0;
+      if (Math.random() < shootProb) {
+        m.shootPause = 1.0;
+        spawnArrow(m, px, py);
+      }
       m.arrowCooldown = 3.5 + Math.random() * 2;
-      spawnArrow(m, px, py);
     }
   }
 
-  // Musician: spawn notes periodically
+  // Musician: spawn notes periodically (not distance-gated)
   if (m.special === 'musician') {
     if (m.noteCooldown === undefined) m.noteCooldown = 2 + Math.random() * 2;
     m.noteCooldown -= dt;
@@ -1782,8 +1837,10 @@ function tickSpecialMonster(m, dt, px, py) {
     if (m.iceCooldown === undefined) m.iceCooldown = 3 + Math.random() * 2;
     m.iceCooldown -= dt;
     if (m.iceCooldown <= 0 && m.y > G.vH * 0.25) {
+      if (Math.random() < shootProb) {
+        spawnIce(m, px, py);
+      }
       m.iceCooldown = 5 + Math.random() * 3;
-      spawnIce(m, px, py);
     }
   }
 
@@ -2285,8 +2342,10 @@ function drawMonsters() {
     ctx.save();
     ctx.translate(m.x, m.y);
 
+    const LABEL_FONTS = ['"Noto Sans KR"', '"Song Myung"', '"Nanum Myeongjo"'];
+    const fontFace = G.varyFonts ? LABEL_FONTS[m.id % LABEL_FONTS.length] : '"Noto Sans KR"';
     const wordSz  = Math.max(16, 23 - (m.word?.length || 0) * 0.3);
-    ctx.font      = `bold ${wordSz}px "Noto Sans KR", sans-serif`;
+    ctx.font      = `bold ${wordSz}px ${fontFace}, sans-serif`;
     ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
     ctx.shadowColor   = 'rgba(0,0,0,1)';
     ctx.shadowBlur    = 6; ctx.shadowOffsetY = 2;
@@ -2476,9 +2535,11 @@ function resizeCv() {
    START / RESET / END
 ================================================================ */
 function startGame() {
-  const lv = parseInt(document.getElementById('inp-lives').value)||5;
+  const lv = parseInt(document.getElementById('inp-lives').value)||10;
   G.playerMax = Math.min(100, Math.max(1, lv));
   G.playerHP  = G.playerMax;
+  G.varyFonts      = document.getElementById('chk-fonts')?.checked ?? true;
+  G.weatherEnabled = document.getElementById('chk-weather')?.checked ?? true;
   G.hero      = computeHeroEmoji();
   G.score     = 0;
   G.phase     = 'play';
