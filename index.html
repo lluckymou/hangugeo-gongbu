@@ -8,27 +8,13 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@400;700;800&display=swap" rel="stylesheet">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🇰🇷</text></svg>">
+    <link rel="stylesheet" href="assets/config.css">
+    <link rel="stylesheet" href="assets/shared.css">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 40px 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-        }
-
         .container {
             max-width: 800px;
-            width: 100%;
+            box-shadow: none;
+            background: none;
         }
 
         .header {
@@ -64,7 +50,7 @@
         }
 
         h1 {
-            color: white;
+            color: var(--text-light);
             font-size: 42px;
             margin-bottom: 10px;
             font-weight: 800;
@@ -72,9 +58,7 @@
         }
 
         .subtitle {
-            color: rgba(255, 255, 255, 0.9);
-            font-size: 18px;
-            font-weight: 400;
+            color: var(--text-light);
         }
 
         .tools-grid {
@@ -85,13 +69,13 @@
         }
 
         .tool-card {
-            background: white;
-            border-radius: 20px;
-            padding: 40px 30px;
+            background: var(--white);
+            border-radius: var(--border-radius);
+            padding: 30px;
             text-align: center;
             cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            transition: var(--transition);
+            box-shadow: var(--shadow);
             text-decoration: none;
             color: inherit;
             display: flex;
@@ -130,7 +114,7 @@
 
         .tool-card:hover {
             transform: translateY(-10px);
-            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
+            box-shadow: var(--shadow-hover);
         }
 
         .tool-icon {
@@ -147,7 +131,7 @@
         .tool-title {
             font-size: 24px;
             font-weight: 700;
-            color: #2d3748;
+            color: var(--text-color);
             margin-bottom: 8px;
         }
 
@@ -165,7 +149,7 @@
 
         .coming-soon:hover {
             transform: none;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            box-shadow: var(--shadow);
         }
 
         .coming-soon .tool-icon {
@@ -191,7 +175,7 @@
 
         .footer {
             text-align: center;
-            color: white;
+            color: var(--text-light);
             font-size: 14px;
             margin-top: 40px;
             opacity: 0.9;
@@ -209,7 +193,7 @@
         }
 
         .footer a {
-            color: white;
+            color: var(--text-light);
             text-decoration: none;
             font-weight: 600;
             transition: opacity 0.3s ease;
@@ -217,6 +201,12 @@
 
         .footer a:hover {
             opacity: 0.7;
+        }
+
+        @media (min-width: 900px) {
+            .tools-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
         }
 
         @media (max-width: 600px) {
@@ -257,30 +247,47 @@
         </div>
 
         <div class="tools-grid">
-            <a href="romanization.html" class="tool-card">
-                <span class="tool-icon">한</span>
-                <h2 class="tool-title">Hangul Romanizer</h2>
+            <a href="apps/romanizer.html" class="tool-card">
+                <span class="tool-icon">R</span>
+                <h2 class="tool-title">한글 Romanizer</h2>
                 <p class="tool-description">Convert Korean Hangul to romanized text</p>
             </a>
 
-            <a href="pronunciation.html" class="tool-card">
-                <span class="tool-icon">🎤</span>
-                <h2 class="tool-title">Pronunciation Practice</h2>
-                <p class="tool-description">Practice and compare your Korean pronunciation with TTS</p>
+            <a href="apps/hangeul-writer.html" class="tool-card">
+                <span class="tool-icon">한</span>
+                <h2 class="tool-title">한글 Writer</h2>
+                <p class="tool-description">Write in Latin script and see it in Hangul</p>
             </a>
 
-            <a href="hanja.html" class="tool-card">
+            <a href="apps/hanja.html" class="tool-card">
                 <span class="tool-icon">漢</span>
                 <h2 class="tool-title">Hanja Practice</h2>
                 <p class="tool-description">Learn Chinese characters used in Korean language</p>
             </a>
 
-            <div class="tool-card coming-soon">
-                <span class="tool-icon">📚</span>
-                <h2 class="tool-title">More Tools</h2>
-                <p class="tool-description">Additional learning tools coming soon</p>
-                <span class="coming-soon-badge">Coming Soon</span>
-            </div>
+            <a href="apps/pronunciation.html" class="tool-card">
+                <span class="tool-icon">🎤</span>
+                <h2 class="tool-title">Pronunciation Practice</h2>
+                <p class="tool-description">Practice and compare Korean pronunciation</p>
+            </a>
+
+            <a href="apps/numbers.html" class="tool-card">
+                <span class="tool-icon">🔢</span>
+                <h2 class="tool-title">Numbers Practice</h2>
+                <p class="tool-description">Learn numbers in Sino and Native systems</p>
+            </a>
+
+            <a href="apps/colors.html" class="tool-card">
+                <span class="tool-icon">🎨</span>
+                <h2 class="tool-title">Colors Practice</h2>
+                <p class="tool-description">Learn color names and their variations</p>
+            </a>
+
+            <a href="apps/typing-game.html" class="tool-card">
+                <span class="tool-icon">⌨️</span>
+                <h2 class="tool-title">Typing Game</h2>
+                <p class="tool-description">Improve your Korean typing skills</p>
+            </a>
         </div>
 
         <div class="footer">

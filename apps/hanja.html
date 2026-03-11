@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hanja Practice</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Yuji+Boku&family=Noto+Serif+TC:wght@400;700&family=Song+Myung&family=Nanum+Gothic:wght@400;700&family=Nanum+Myeongjo:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>漢</text></svg>">
+    <link rel="stylesheet" href="../assets/config.css">
+    <link rel="stylesheet" href="../assets/shared.css">
+    <style>
+        /* Hanja-specific styles */
+        .difficulty-control {
+            margin-bottom: 25px;
+        }
+
+        .difficulty-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .difficulty-label {
+            color: #333;
+            font-weight: 600;
+            font-size: 16px;
+        }
+
+        .difficulty-level {
+            color: var(--primary-color);
+            font-weight: 700;
+            font-size: 14px;
+        }
+
+        .difficulty-level.hard {
+            color: #f56565;
+        }
+
+        .slider {
+            width: 100%;
+            height: 6px;
+            border-radius: 5px;
+            background: #ddd;
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        .slider:not(.hard)::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            cursor: pointer;
+        }
+
+        .slider:not(.hard)::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            cursor: pointer;
+            border: none;
+        }
+
+        .slider.hard::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #f56565;
+            cursor: pointer;
+        }
+
+        .slider.hard::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #f56565;
+            cursor: pointer;
+            border: none;
+        }
+
+        .hanja-display {
+            background: linear-gradient(135deg, #f5e6d3 0%, #ede0ce 100%);
+            border-radius: 15px;
+            padding: 40px;
+            text-align: center;
+            margin-bottom: 10px;
+            min-height: 200px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s ease;
+            position: relative;
+        }
+
+        .hanja-display:hover {
+            transform: scale(1.02);
+        }
+
+        .hanja-controls {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .hanja-character {
+            font-size: 120px;
+            color: #4a4a4a;
+            font-family: 'Yuji Boku', cursive;
+            line-height: 1;
+            opacity: 0;
+            animation: fadeIn 0.5s ease forwards;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .input-row {
+            display: grid;
+            grid-template-columns: 100px 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+            align-items: start;
+        }
+
+        .input-label {
+            color: #333;
+            font-weight: 500;
+            font-size: 14px;
+            padding-top: 12px;
+        }
+
+        .pronunciation-input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 32px;
+            font-family: 'Song Myung', serif;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .pronunciation-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+
+        .pronunciation-input::placeholder {
+            color: #cbd5e0;
+        }
+
+        .meaning-container {
+            position: relative;
+        }
+
+        .meaning-input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .meaning-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+
+        .meaning-dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 2px solid var(--primary-color);
+            border-top: none;
+            border-radius: 0 0 8px 8px;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 10;
+            display: none;
+        }
+
+        .meaning-dropdown.show {
+            display: block;
+        }
+
+        .meaning-option {
+            padding: 10px 15px;
+            cursor: pointer;
+            transition: background 0.2s ease;
+            font-size: 14px;
+        }
+
+        .meaning-option:hover {
+            background: #f7fafc;
+        }
+
+        .meaning-option:active {
+            background: #edf2f7;
+        }
+
+        .pronunciation-variants {
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #2d3748;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            white-space: nowrap;
+            margin-bottom: 5px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .pronunciation-variants::after {
+            content: '';
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border: 5px solid transparent;
+            border-top-color: #2d3748;
+        }
+
+        .pronunciation-variants.show {
+            opacity: 1;
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        .verified {
+            pointer-events: none;
+        }
+
+        .correct {
+            color: #48bb78 !important;
+            border-color: #48bb78 !important;
+        }
+
+        .incorrect {
+            color: #f56565 !important;
+            border-color: #f56565 !important;
+        }
+
+        .neutral {
+            color: #718096 !important;
+            border-color: #cbd5e0 !important;
+        }
+
+        @media (max-width: 600px) {
+            .hanja-character {
+                font-size: 100px;
+            }
+
+            .input-row {
+                grid-template-columns: 1fr;
+            }
+
+            .input-label {
+                padding-top: 0;
+                margin-bottom: 5px;
+            }
+        }
+
+        .control-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .control-btn:hover {
+            background: #5568d3;
+            transform: translateY(-1px);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <button class="close-btn" onclick="window.location.href='../index.html'"></button>
+        <h1>漢 Hanja Practice</h1>
+        <p class="subtitle">Learn Chinese characters used in Korean</p>
+
+        <div class="difficulty-control">
+            <div class="difficulty-header">
+                <span class="difficulty-label">Difficulty Level</span>
+                <span class="difficulty-level" id="difficultyLevel">Daily Life (50 characters)</span>
+            </div>
+            <input type="range" min="0" max="14" value="0" class="slider" id="difficultySlider">
+        </div>
+
+        <div class="hanja-display" id="hanjaDisplay">
+            <div class="hanja-character" id="hanjaCharacter"><span style="font-size: 50%; line-height: 0">Loading...</span></div>
+            <div class="hanja-controls" id="hanjaControls">
+                <button class="control-btn" id="fontBtn">🖌️</button>
+                <button class="control-btn middle" id="speakBtn">🔊</button>
+                <button class="control-btn" id="resetBtn">♻️ Reset</button>
+            </div>
+        </div>
+
+        <div class="input-row">
+            <label class="input-label">Pronunciation</label>
+            <div class="input-wrapper">
+                <input 
+                    type="text" 
+                    class="pronunciation-input" 
+                    id="pronunciationInput"
+                    placeholder="ㅇ"
+                    maxlength="5"
+                >
+                <div class="pronunciation-variants" id="pronunciationVariants"></div>
+            </div>
+        </div>
+
+        <div class="input-row">
+            <label class="input-label">Meaning</label>
+            <div class="meaning-container">
+                <input 
+                    type="text" 
+                    class="meaning-input" 
+                    id="meaningInput"
+                    placeholder="Type to search meanings..."
+                    autocomplete="off"
+                >
+                <div class="meaning-dropdown" id="meaningDropdown"></div>
+            </div>
+        </div>
+
+        <button class="btn" id="verifyBtn">Verify</button>
+
+        <div class="stats-container">
+            <div class="stat-item">
+                <div class="stat-label">Correct Meanings</div>
+                <div class="stat-value" id="correctMeanings">0</div>
+                <div class="stat-consecutive" id="consecutiveMeanings">0 consecutively</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">Correct Pronunciations</div>
+                <div class="stat-value" id="correctPronunciations">0</div>
+                <div class="stat-consecutive" id="consecutivePronunciations">0 consecutively</div>
+            </div>
+        </div>
+
+        <div class="info-box">
+            💡 <strong>Tip:</strong> You can test yourself on pronunciation only, meaning only, or both! Leave one field empty to focus on what you want to practice.
+        </div>
+    </div>
+
+    <div class="footer">
+        <a href="../index.html">🇰🇷 한국말 공부</a>ㅤ•ㅤBuilt with care by <a href="https://github.com/lluckymou" target="_blank">llucmou 🌲</a>
+    </div>
+
+    <script src="../assets/hanja-utils.js"></script>
+    <script src="../assets/hanja.js"></script>
+
+    <script>
+        // State
+        let currentHanja = null;
+        let currentFontIndex = 0;
+        const hanjaFonts = ['Yuji Boku', 'Noto Serif TC', 'Song Myung'];
+        const koreanFonts = ['Song Myung', 'Nanum Myeongjo', 'Nanum Gothic'];
+        let isVerified = false;
+        let stats = {
+            correctMeanings: 0,
+            consecutiveMeanings: 0,
+            correctPronunciations: 0,
+            consecutivePronunciations: 0
+        };
+        let currentDifficultyIndex = 0;
+        let availableHanja = [];
+        let allMeanings = [];
+
+        // DOM Elements
+        const difficultySlider = document.getElementById('difficultySlider');
+        const difficultyLevel = document.getElementById('difficultyLevel');
+        const hanjaDisplay = document.getElementById('hanjaDisplay');
+        const hanjaCharacter = document.getElementById('hanjaCharacter');
+        const pronunciationInput = document.getElementById('pronunciationInput');
+        const pronunciationVariants = document.getElementById('pronunciationVariants');
+        const meaningInput = document.getElementById('meaningInput');
+        const meaningDropdown = document.getElementById('meaningDropdown');
+        const verifyBtn = document.getElementById('verifyBtn');
+        const correctMeaningsEl = document.getElementById('correctMeanings');
+        const consecutiveMeaningsEl = document.getElementById('consecutiveMeanings');
+        const correctPronunciationsEl = document.getElementById('correctPronunciations');
+        const consecutivePronunciationsEl = document.getElementById('consecutivePronunciations');
+        const speakBtn = document.getElementById('speakBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const fontBtn = document.getElementById('fontBtn');
+
+        // Initialize
+        function init() {
+            collectAllMeanings();
+            updateDifficulty();
+            loadNewHanja();
+            updateStats();
+        }
+
+        // Update difficulty based on slider
+        difficultySlider.addEventListener('input', function() {
+            currentDifficultyIndex = parseInt(this.value);
+            updateDifficulty();
+            loadNewHanja();
+            resetInputs();
+        });
+
+        function updateDifficulty() {
+            const level = DIFFICULTY_LEVELS[currentDifficultyIndex];
+            difficultyLevel.textContent = `${level.name} (${level.count} characters)`;
+            
+            // Build available hanja pool based on difficulty
+            // Each level includes all characters from previous levels
+            availableHanja = [];
+            
+            if (level.count >= 50) availableHanja.push(...HANJA_DATA[50]);
+            if (level.count >= 100) availableHanja.push(...HANJA_DATA[100]);
+            if (level.count >= 150) availableHanja.push(...HANJA_DATA[150]);
+            if (level.count >= 225) availableHanja.push(...HANJA_DATA[225]);
+            if (level.count >= 300) availableHanja.push(...HANJA_DATA[300]);
+            if (level.count >= 400) availableHanja.push(...HANJA_DATA[400]);
+            if (level.count >= 500) availableHanja.push(...HANJA_DATA[500]);
+            if (level.count >= 750) availableHanja.push(...HANJA_DATA[750]);
+            if (level.count >= 1000) availableHanja.push(...HANJA_DATA[1000]);
+            if (level.count >= 1500) {
+                availableHanja.push(...HANJA_DATA[1500]);
+                difficultySlider.classList.add('hard');
+                difficultyLevel.classList.add('hard');
+            } else {
+                difficultySlider.classList.remove('hard');
+                difficultyLevel.classList.remove('hard');
+            }
+            if (level.count >= 1817) availableHanja.push(...HANJA_DATA[1817]);
+            if (level.count >= 2355) availableHanja.push(...HANJA_DATA[2355]);
+            if (level.count >= 3500) availableHanja.push(...HANJA_DATA[3500]);
+            if (level.count >= 4650) availableHanja.push(...HANJA_DATA[4650]);
+            if (level.count >= 5978) availableHanja.push(...HANJA_DATA[5978]);
+        }
+
+        function collectAllMeanings() {
+            const meaningsSet = new Set();
+            Object.values(HANJA_DATA).forEach(levelData => {
+                levelData.forEach(item => {
+                    item.meanings.forEach(m => meaningsSet.add(m));
+                });
+            });
+            allMeanings = Array.from(meaningsSet).sort();
+        }
+
+        // Load new random hanja
+        function loadNewHanja() {
+            if (availableHanja.length === 0) return;
+            
+            currentHanja = availableHanja[Math.floor(Math.random() * availableHanja.length)];
+            
+            // Reset animation
+            hanjaCharacter.style.animation = 'none';
+            setTimeout(() => {
+                hanjaCharacter.textContent = currentHanja.char;
+                hanjaCharacter.style.animation = 'fadeIn 0.5s ease forwards';
+            }, 10);
+        }
+
+        // Font switching
+        fontBtn.addEventListener('click', function() {
+            currentFontIndex = (currentFontIndex + 1) % hanjaFonts.length;
+            hanjaCharacter.style.fontFamily = `'${hanjaFonts[currentFontIndex]}', cursive`;
+            pronunciationInput.style.fontFamily = `'${koreanFonts[currentFontIndex]}', serif`;
+        });
+
+        // Meaning input with dropdown
+        meaningInput.addEventListener('focus', function() {
+            if (!isVerified) {
+                if (this.value.trim()) {
+                    updateMeaningDropdown(this.value);
+                }
+            }
+        });
+
+        meaningInput.addEventListener('input', function() {
+            if (!isVerified) {
+                updateMeaningDropdown(this.value);
+            }
+        });
+
+        meaningInput.addEventListener('blur', function() {
+            setTimeout(() => {
+                meaningDropdown.classList.remove('show');
+            }, 200);
+        });
+
+        function updateMeaningDropdown(filter) {
+            if (!filter) {
+                meaningDropdown.classList.remove('show');
+                return;
+            }
+            
+            const lowerFilter = filter.toLowerCase();
+            const filtered = allMeanings.filter(m => 
+                m.toLowerCase().startsWith(lowerFilter)
+            ).slice(0, 5);
+            
+            if (filtered.length === 0) {
+                meaningDropdown.classList.remove('show');
+                return;
+            }
+
+            meaningDropdown.innerHTML = filtered.map(meaning => 
+                `<div class="meaning-option" data-meaning="${meaning}">${meaning}</div>`
+            ).join('');
+            
+            meaningDropdown.classList.add('show');
+            
+            // Add click handlers
+            document.querySelectorAll('.meaning-option').forEach(option => {
+                option.addEventListener('click', function() {
+                    meaningInput.value = this.dataset.meaning;
+                    meaningDropdown.classList.remove('show');
+                });
+            });
+        }
+
+        // Verify button
+        verifyBtn.addEventListener('click', function() {
+            if (!isVerified) {
+                verify();
+            } else {
+                next();
+            }
+        });
+
+        // Speak button
+        speakBtn.addEventListener('click', function() {
+            if (currentHanja && currentHanja.pronunciations.length > 0) {
+                const utterance = new SpeechSynthesisUtterance(currentHanja.pronunciations[0]);
+                utterance.lang = 'ko-KR'; // Korean language
+                speechSynthesis.speak(utterance);
+            }
+        });
+
+        // Reset button
+        resetBtn.addEventListener('click', function() {
+            if (event.shiftKey) {
+                // Shift+click: reset without confirmation
+                resetStats();
+            } else {
+                // Normal click: confirm
+                if (confirm('Are you sure you want to reset all scores?')) {
+                    resetStats();
+                }
+            }
+        });
+
+        function resetStats() {
+            stats.correctMeanings = 0;
+            stats.consecutiveMeanings = 0;
+            stats.correctPronunciations = 0;
+            stats.consecutivePronunciations = 0;
+            updateStats();
+            loadNewHanja();
+            resetInputs();
+            isVerified = false;
+            verifyBtn.textContent = 'Verify';
+        }
+
+        function verify() {
+            const pronunciationValue = pronunciationInput.value.trim();
+            const meaningValue = meaningInput.value.trim();
+            
+            // Check if at least one field is filled
+            if (!pronunciationValue && !meaningValue) {
+                return;
+            }
+
+            if (!currentHanja) return;
+            
+            let pronunciationCorrect = null;
+            let meaningCorrect = null;
+            
+            // Verify pronunciation
+            if (pronunciationValue) {
+                pronunciationCorrect = currentHanja.pronunciations.includes(pronunciationValue);
+                
+                if (pronunciationCorrect) {
+                    pronunciationInput.classList.add('correct');
+                    stats.correctPronunciations++;
+                    stats.consecutivePronunciations++;
+                    
+                    // Show variants if multiple exist
+                    if (currentHanja.pronunciations.length > 1) {
+                        pronunciationVariants.textContent = currentHanja.pronunciations.join(', ');
+                        pronunciationVariants.classList.add('show');
+                    }
+                } else {
+                    pronunciationInput.classList.add('incorrect');
+                    pronunciationInput.value = currentHanja.pronunciations[0];
+                    stats.consecutivePronunciations = 0;
+                    
+                    // Show all variants
+                    if (currentHanja.pronunciations.length > 1) {
+                        pronunciationVariants.textContent = currentHanja.pronunciations.join(', ');
+                        pronunciationVariants.classList.add('show');
+                    }
+                }
+            } else {
+                pronunciationInput.classList.add('neutral');
+                pronunciationInput.value = currentHanja.pronunciations[0];
+                
+                if (currentHanja.pronunciations.length > 1) {
+                    pronunciationVariants.textContent = currentHanja.pronunciations.join(', ');
+                    pronunciationVariants.classList.add('show');
+                }
+            }
+            
+            // Verify meaning
+            if (meaningValue) {
+                meaningCorrect = currentHanja.meanings.some(m => 
+                    m.toLowerCase() === meaningValue.toLowerCase()
+                );
+                
+                if (meaningCorrect) {
+                    meaningInput.classList.add('correct');
+                    stats.correctMeanings++;
+                    stats.consecutiveMeanings++;
+                } else {
+                    meaningInput.classList.add('incorrect');
+                    meaningInput.value = currentHanja.meanings.join(', ');
+                    stats.consecutiveMeanings = 0;
+                }
+            } else {
+                meaningInput.classList.add('neutral');
+                meaningInput.value = currentHanja.meanings.join(', ');
+            }
+            
+            pronunciationInput.classList.add('verified');
+            meaningInput.classList.add('verified');
+            isVerified = true;
+            verifyBtn.textContent = 'Next';
+            updateStats();
+        }
+
+        function next() {
+            resetInputs();
+            loadNewHanja();
+            isVerified = false;
+            verifyBtn.textContent = 'Verify';
+        }
+
+        function resetInputs() {
+            pronunciationInput.value = '';
+            meaningInput.value = '';
+            pronunciationInput.className = 'pronunciation-input';
+            meaningInput.className = 'meaning-input';
+            pronunciationVariants.classList.remove('show');
+            pronunciationVariants.textContent = '';
+        }
+
+        function updateStats() {
+            correctMeaningsEl.textContent = stats.correctMeanings;
+            consecutiveMeaningsEl.textContent = `${stats.consecutiveMeanings} consecutively`;
+            correctPronunciationsEl.textContent = stats.correctPronunciations;
+            consecutivePronunciationsEl.textContent = `${stats.consecutivePronunciations} consecutively`;
+        }
+
+        // Initialize app
+        init();
+    </script>
+</body>
+</html>

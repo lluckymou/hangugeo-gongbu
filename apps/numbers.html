@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Korean Numbers Practice</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Yuji+Boku&family=Noto+Serif+TC:wght@400;700&family=Song+Myung&family=Nanum+Gothic:wght@400;700&family=Nanum+Myeongjo:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔢</text></svg>">
+    <link rel="stylesheet" href="../assets/config.css">
+    <link rel="stylesheet" href="../assets/shared.css">
+    <style>
+        .difficulty-control {
+            margin-bottom: 25px;
+        }
+
+        .difficulty-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .difficulty-label {
+            color: #333;
+            font-weight: 600;
+            font-size: 16px;
+        }
+
+        .difficulty-level {
+            color: var(--primary-color);
+            font-weight: 700;
+            font-size: 14px;
+            margin-left: auto;
+            margin-right: 15px;
+        }
+
+        .slider {
+            width: 100%;
+            height: 6px;
+            border-radius: 5px;
+            background: #ddd;
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            cursor: pointer;
+        }
+
+        .slider::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            cursor: pointer;
+            border: none;
+        }
+
+        .controls-row {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .sino-toggle {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .sino-toggle input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+        }
+
+        .sino-toggle label {
+            font-size: 14px;
+            color: #333;
+        }
+
+        select {
+            padding: 8px 12px;
+            border: 2px solid var(--medium-gray);
+            border-radius: 8px;
+            font-size: 14px;
+            background: white;
+            cursor: pointer;
+            transition: border-color 0.3s ease;
+        }
+
+        select:hover, select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+
+        .number-display {
+            background: linear-gradient(135deg, #f5e6d3 0%, #ede0ce 100%);
+            border-radius: 15px;
+            padding: 40px;
+            text-align: center;
+            margin-bottom: 20px;
+            min-height: 200px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s ease;
+            position: relative;
+        }
+
+        .number-display:hover {
+            transform: scale(1.02);
+        }
+
+        .number-controls {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .number-controls .control-btn:hover {
+            opacity: 1;
+        }
+
+        @media (max-width: 600px) {
+            .number-controls {
+                opacity: 1;
+            }
+        }
+
+        .number-character {
+            font-size: 80px;
+            color: #4a4a4a;
+            font-family: 'Nanum Gothic', sans-serif;
+            line-height: 1;
+            opacity: 0;
+            animation: fadeIn 0.5s ease forwards;
+            white-space: nowrap;
+        }
+
+        .hanja-tooltip {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 12px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .number-display:hover .hanja-tooltip {
+            opacity: 1;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .input-row {
+            display: grid;
+            grid-template-columns: 120px 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+            align-items: start;
+        }
+
+        .input-label {
+            color: #333;
+            font-weight: 500;
+            font-size: 14px;
+            padding-top: 12px;
+        }
+
+        .input-field {
+            font-size: 24px;
+        }
+
+        .control-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 25px;
+        }
+
+        .control-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .control-btn:hover {
+            background: #5568d3;
+            transform: translateY(-1px);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <button class="close-btn" onclick="window.location.href='../index.html'"></button>
+        <h1>🔢 Korean Numbers Practice</h1>
+        <p class="subtitle">Learn Korean numbers in Sino and Native systems</p>
+
+        <div class="controls-row" style="margin-bottom: 25px; gap: 15px;">
+            <select id="numberModeSelect" style="padding: 8px 12px; border: 2px solid var(--medium-gray); border-radius: 8px; font-size: 14px; background: white; cursor: pointer; flex: 1;">
+                <option value="normal">Numbers</option>
+                <option value="phone">Phone Numbers</option>
+            </select>
+            <select id="modeSelect" style="padding: 8px 12px; border: 2px solid var(--medium-gray); border-radius: 8px; font-size: 14px; background: white; cursor: pointer; flex: 1;">
+                <option value="number">Show Number</option>
+                <option value="text">Show Text</option>
+            </select>
+        </div>
+
+        <div class="difficulty-control" id="difficultyControl" style="display: none;">
+            <div class="difficulty-header">
+                <span class="difficulty-label">Difficulty Level</span>
+                <span class="difficulty-level" id="difficultyLevel">10 digits</span>
+                <div class="sino-toggle" id="sinoToggleContainer" style="overflow: hidden; max-width: 9999px; transition: max-width 0.3s ease;">
+                    <input type="checkbox" id="sinoToggle" checked>
+                    <label for="sinoToggle">Sino</label>
+                </div>
+            </div>
+            <input type="range" min="0" max="7" value="0" class="slider" id="difficultySlider">
+        </div>
+
+        <div class="number-display" id="numberDisplay">
+            <div class="number-character" id="numberCharacter">10</div>
+            <div class="hanja-tooltip" id="hanjaTooltip"></div>
+            <div class="number-controls">
+                <button class="control-btn" id="fontBtn">🖌️</button>
+                <button class="control-btn middle" id="listenBtn">🔊</button>
+                <button class="control-btn" id="resetBtn">♻️ Reset</button>
+            </div>
+        </div>
+
+        <div class="input-row">
+            <label class="input-label" id="inputLabel">Korean Number</label>
+            <input 
+                type="text" 
+                class="input-field" 
+                id="numberInput"
+                placeholder="한글"
+            >
+        </div>
+
+        <button class="btn" id="verifyBtn">Verify</button>
+
+        <div class="stats-container">
+            <div class="stat-item">
+                <div class="stat-label">Correct Answers</div>
+                <div class="stat-value" id="correctAnswers">0</div>
+                <div class="stat-consecutive" id="consecutiveAnswers">0 consecutively</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">Total Attempts</div>
+                <div class="stat-value" id="totalAttempts">0</div>
+            </div>
+        </div>
+
+        <div class="info-box">
+            💡 <strong>Tip:</strong> Practice both Sino-Korean (일, 이, 삼...) and Native Korean (하나, 둘, 셋...) number systems. Hover over numbers to see Hanja characters!
+        </div>
+    </div>
+
+    <div class="footer">
+        <a href="../index.html">🇰🇷 한국말 공부</a>ㅤ•ㅤBuilt with care by <a href="https://github.com/lluckymou" target="_blank">llucmou 🌲</a>
+    </div>
+
+    <script>
+        // Korean numbers data
+        const NUMBERS_DATA = {
+            sino: {
+                0: { text: '공', hanja: '空', altText: '영' }, // phone: 공, normal: 영 or 공
+                1: { text: '일', hanja: '一' },
+                2: { text: '이', hanja: '二' },
+                3: { text: '삼', hanja: '三' },
+                4: { text: '사', hanja: '四' },
+                5: { text: '오', hanja: '五' },
+                6: { text: '육', hanja: '六' },
+                7: { text: '칠', hanja: '七' },
+                8: { text: '팔', hanja: '八' },
+                9: { text: '구', hanja: '九' },
+                10: { text: '십', hanja: '十' },
+                100: { text: '백', hanja: '百' },
+                1000: { text: '천', hanja: '千' },
+                10000: { text: '만', hanja: '萬' },
+                100000000: { text: '억', hanja: '億' }
+            },
+            native: {
+                0: { text: '공' },
+                1: { text: '하나' },
+                2: { text: '둘' },
+                3: { text: '셋' },
+                4: { text: '넷' },
+                5: { text: '다섯' },
+                6: { text: '여섯' },
+                7: { text: '일곱' },
+                8: { text: '여덟' },
+                9: { text: '아홉' },
+                10: { text: '열' }
+            }
+        };
+
+        const DIFFICULTY_STEPS = [10, 100, 1000, 10000, 100000, 1000000, 10000000, 100000000];
+        const HANJA_PHONE_ZERO = '空'; // For phone numbers
+        const HANJA_NORMAL_ZERO = '零'; // For normal numbers
+
+        // State
+        let currentMode = 'normal'; // 'normal' or 'phone'
+        let currentDifficultyIndex = 0;
+        let currentNumber = 10;
+        let currentPhoneNumber = [];
+        let isSino = true;
+        let mode = 'number'; // 'number' or 'text'
+        let stats = {
+            correct: 0,
+            consecutive: 0,
+            total: 0
+        };
+
+        // DOM Elements
+        const numberModeSelect = document.getElementById('numberModeSelect');
+        const difficultyControl = document.getElementById('difficultyControl');
+        const difficultySlider = document.getElementById('difficultySlider');
+        const difficultyLevel = document.getElementById('difficultyLevel');
+        const sinoToggle = document.getElementById('sinoToggle');
+        const modeSelect = document.getElementById('modeSelect');
+        const numberDisplay = document.getElementById('numberDisplay');
+        const numberCharacter = document.getElementById('numberCharacter');
+        const hanjaTooltip = document.getElementById('hanjaTooltip');
+        const numberInput = document.getElementById('numberInput');
+        const inputLabel = document.getElementById('inputLabel');
+        const listenBtn = document.getElementById('listenBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const fontBtn = document.getElementById('fontBtn');
+        const verifyBtn = document.getElementById('verifyBtn');
+        const correctAnswersEl = document.getElementById('correctAnswers');
+        const consecutiveAnswersEl = document.getElementById('consecutiveAnswers');
+        const totalAttemptsEl = document.getElementById('totalAttempts');
+
+        // Font switching (standardized across apps)
+        let currentFontIndex = 0;
+        const hanjaFonts = ['Yuji Boku', 'Noto Serif TC', 'Song Myung'];
+        const koreanFonts = ['Song Myung', 'Nanum Myeongjo', 'Nanum Gothic'];
+
+        // Font switching on button click
+        fontBtn.addEventListener('click', function() {
+            currentFontIndex = (currentFontIndex + 1) % hanjaFonts.length;
+            const fontFamily = currentMode === 'phone' 
+                ? `'${koreanFonts[currentFontIndex]}', serif`
+                : `'${hanjaFonts[currentFontIndex]}', cursive`;
+            numberCharacter.style.fontFamily = fontFamily;
+            numberInput.style.fontFamily = `'${koreanFonts[currentFontIndex]}', serif`;
+        });
+
+        // Initialize
+        function init() {
+            updateModeUI();
+            updateDisplay();
+            updateStats();
+        }
+
+        // Update UI based on current mode
+        function updateModeUI() {
+            if (currentMode === 'phone') {
+                difficultyControl.style.display = 'none';
+                inputLabel.textContent = mode === 'number' ? 'Phone digits (Korean/Hanja)' : 'Phone Number';
+            } else {
+                difficultyControl.style.display = 'block';
+                inputLabel.textContent = isSino ? 'Sino Number' : 'Native Number';
+            }
+        }
+
+        // Generate random phone number with fixed Korean phone number format (11 digits)
+        function generatePhoneNumber() {
+            // Standard Korean phone number format: 010-1234-5678 (11 digits total)
+            currentPhoneNumber = [];
+            for (let i = 0; i < 11; i++) {
+                currentPhoneNumber.push(Math.floor(Math.random() * 10));
+            }
+            return currentPhoneNumber;
+        }
+
+        // Generate random number for normal mode
+        function generateNumber() {
+            return Math.floor(Math.random() * 10) + (isSino ? 0 : 1);
+        }
+
+        // Convert number to Korean text
+        function numberToKorean(num, sino = true) {
+            if (!sino) {
+                // Native Korean - only up to 10
+                const data = NUMBERS_DATA.native[Math.min(num, 10)];
+                return data ? data.text : '';
+            }
+            
+            if (num <= 10) {
+                const data = NUMBERS_DATA.sino[num];
+                return data ? data.text : '';
+            }
+            
+            // Composite numbers > 10
+            let result = '';
+            let remaining = num;
+            
+            // Process 억 (hundred millions)
+            if (remaining >= 100000000) {
+                const component = Math.floor(remaining / 100000000);
+                result += getComponentValue(component) + NUMBERS_DATA.sino[100000000].text;
+                remaining %= 100000000;
+            }
+            
+            // Process 만 (ten thousands)
+            if (remaining >= 10000) {
+                const component = Math.floor(remaining / 10000);
+                result += getComponentValue(component) + NUMBERS_DATA.sino[10000].text;
+                remaining %= 10000;
+            }
+            
+            // Process 천 (thousands)
+            if (remaining >= 1000) {
+                const component = Math.floor(remaining / 1000);
+                result += getComponentValue(component) + NUMBERS_DATA.sino[1000].text;
+                remaining %= 1000;
+            }
+            
+            // Process 백 (hundreds)
+            if (remaining >= 100) {
+                const component = Math.floor(remaining / 100);
+                result += getComponentValue(component) + NUMBERS_DATA.sino[100].text;
+                remaining %= 100;
+            }
+            
+            // Process 십 (tens)
+            if (remaining >= 10) {
+                const component = Math.floor(remaining / 10);
+                result += getComponentValue(component) + NUMBERS_DATA.sino[10].text;
+                remaining %= 10;
+            }
+            
+            // Process ones
+            if (remaining > 0) {
+                result += NUMBERS_DATA.sino[remaining].text;
+            }
+            
+            return result;
+        }
+        
+        function getComponentValue(value) {
+            // Component value is 1-9 (never 0 for higher places)
+            if (value === 0) return '';
+            const data = NUMBERS_DATA.sino[value];
+            return data ? data.text : '';
+        }
+
+        // Calculate optimal font size based on character count and container width
+        function calculateOptimalFontSize(element, maxFontSize = 80) {
+            const container = element.parentElement;
+            const containerWidth = container.clientWidth;
+            
+            // Account for padding (40px on each side = 80px total)
+            const padding = 40 * 2;
+            const availableWidth = containerWidth - padding;
+            
+            const text = element.textContent;
+            const numChars = text.length;
+            
+            if (numChars === 0 || availableWidth <= 0) return maxFontSize;
+            
+            // Temporarily set to max size to measure char width
+            element.style.fontSize = maxFontSize + 'px';
+            
+            // Force layout recalculation
+            const scrollWidth = element.scrollWidth;
+            const charWidth = scrollWidth / numChars;
+            
+            // Calculate optimal font size based on available width
+            // Formula: fontSize = (availableWidth * maxFontSize) / (numChars * charWidth)
+            const optimalSize = Math.floor((availableWidth * maxFontSize) / (numChars * charWidth));
+            
+            // Cap at maxFontSize and min at 16px
+            const finalSize = Math.max(16, Math.min(optimalSize, maxFontSize));
+            
+            element.style.fontSize = finalSize + 'px';
+            
+            return finalSize;
+        }
+
+        // Get hanja for number (composite numbers supported)
+        function getHanja(num, isPhoneMode = false) {
+            // Special case: zero
+            if (num === 0) {
+                if (isPhoneMode) return HANJA_PHONE_ZERO;
+                return HANJA_NORMAL_ZERO;
+            }
+            
+            // Single digit 1-10
+            if (num <= 10) {
+                const sinoData = NUMBERS_DATA.sino[num];
+                return sinoData ? sinoData.hanja : '';
+            }
+            
+            // Composite numbers > 10
+            let result = '';
+            let remaining = num;
+            
+            // Process 억 (hundred millions)
+            if (remaining >= 100000000) {
+                const component = Math.floor(remaining / 100000000);
+                result += getHanjaComponent(component) + NUMBERS_DATA.sino[100000000].hanja;
+                remaining %= 100000000;
+            }
+            
+            // Process 만 (ten thousands)
+            if (remaining >= 10000) {
+                const component = Math.floor(remaining / 10000);
+                result += getHanjaComponent(component) + NUMBERS_DATA.sino[10000].hanja;
+                remaining %= 10000;
+            }
+            
+            // Process 천 (thousands)
+            if (remaining >= 1000) {
+                const component = Math.floor(remaining / 1000);
+                result += getHanjaComponent(component) + NUMBERS_DATA.sino[1000].hanja;
+                remaining %= 1000;
+            }
+            
+            // Process 백 (hundreds)
+            if (remaining >= 100) {
+                const component = Math.floor(remaining / 100);
+                result += getHanjaComponent(component) + NUMBERS_DATA.sino[100].hanja;
+                remaining %= 100;
+            }
+            
+            // Process 십 (tens)
+            if (remaining >= 10) {
+                const component = Math.floor(remaining / 10);
+                result += getHanjaComponent(component) + NUMBERS_DATA.sino[10].hanja;
+                remaining %= 10;
+            }
+            
+            // Process ones
+            if (remaining > 0) {
+                result += getHanjaComponent(remaining);
+            }
+            
+            return result;
+        }
+        
+        function getHanjaComponent(value) {
+            // Component value is 1-9
+            if (value === 0 || value > 9) return '';
+            const sinoData = NUMBERS_DATA.sino[value];
+            return sinoData ? sinoData.hanja : '';
+        }
+
+        // Get all valid pronunciations for a digit (including alternatives)
+        function getValidPronunciations(digit, isPhoneMode = false) {
+            const pronunciations = [];
+            const sinoData = NUMBERS_DATA.sino[digit];
+            const nativeData = NUMBERS_DATA.native[digit];
+            
+            if (sinoData) {
+                pronunciations.push(sinoData.text);
+                // Add alternative pronunciation for 0 in phone mode vs normal
+                if (digit === 0 && isPhoneMode && sinoData.altText) {
+                    // In phone mode, accept 고 (공)
+                } else if (digit === 0 && !isPhoneMode && sinoData.altText) {
+                    // In normal mode, accept both 공 and 영
+                    pronunciations.push(sinoData.altText);
+                }
+            }
+            
+            return pronunciations;
+        }
+
+        // Simple Sino-Korean conversion (basic implementation)
+        // Updated display function for phone / normal modes
+        function updateDisplay() {
+            numberInput.value = '';
+            numberInput.style.borderColor = 'var(--medium-gray)';
+            
+            if (currentMode === 'phone') {
+                generatePhoneNumber();
+                
+                if (mode === 'number') {
+                    // Show Number: display digits, user enters Korean/Hanja
+                    const phoneDisplay = currentPhoneNumber.slice(0,3).join('') + '-' + 
+                                         currentPhoneNumber.slice(3,7).join('') + '-' + 
+                                         currentPhoneNumber.slice(7,11).join('');
+                    numberCharacter.textContent = phoneDisplay;
+                    numberInput.placeholder = '공일공-일이삼사-오육칠팔';
+                } else {
+                    // Show Text: display Korean digits formatted, user enters digits
+                    const digitTexts = currentPhoneNumber.map(d => NUMBERS_DATA.sino[d].text).join('');
+                    const phoneDisplayFormatted = digitTexts.slice(0,2) + '-' + 
+                                                   digitTexts.slice(2,6) + '-' + 
+                                                   digitTexts.slice(6,11);
+                    numberCharacter.textContent = phoneDisplayFormatted;
+                    numberInput.placeholder = '010-1234-5678';
+                }
+                
+                // Show hanjas for all digits
+                const allHanjas = currentPhoneNumber.map((d, i) => getHanja(d, true)).join(' ');
+                hanjaTooltip.textContent = allHanjas;
+            } else {
+                // Normal number mode with difficulty levels
+                const maxNum = DIFFICULTY_STEPS[currentDifficultyIndex];
+                difficultyLevel.textContent = `up to ${maxNum}`;
+                currentNumber = Math.floor(Math.random() * maxNum) + 1;
+                
+                if (mode === 'number') {
+                    numberCharacter.textContent = currentNumber;
+                    inputLabel.textContent = 'Korean Text';
+                } else {
+                    const koreanText = numberToKorean(currentNumber, isSino);
+                    numberCharacter.textContent = koreanText;
+                    inputLabel.textContent = 'Number';
+                }
+                // Show hanja
+                hanjaTooltip.textContent = getHanja(currentNumber, false);
+            }
+            
+            // Calculate optimal font size to fit in single line
+            calculateOptimalFontSize(numberCharacter);
+            
+            // Animation
+            numberCharacter.style.animation = 'none';
+            setTimeout(() => {
+                numberCharacter.style.animation = 'fadeIn 0.5s ease forwards';
+            }, 10);
+        }
+
+        // Event listeners
+        numberModeSelect.addEventListener('change', function() {
+            currentMode = this.value;
+            updateModeUI();
+            updateDisplay();
+        });
+
+        difficultySlider.addEventListener('input', function() {
+            currentDifficultyIndex = parseInt(this.value);
+            // Collapse / expand sino toggle based on difficulty
+            const sinoContainer = document.getElementById('sinoToggleContainer');
+            if (currentDifficultyIndex > 1) { // > 100 (which is at index 1)
+                sinoContainer.style.maxWidth = '0px';
+            } else {
+                sinoContainer.style.maxWidth = '9999px';
+            }
+            updateDisplay();
+        });
+
+        sinoToggle.addEventListener('change', function() {
+            isSino = this.checked;
+            updateDisplay();
+        });
+
+        modeSelect.addEventListener('change', function() {
+            mode = this.value;
+            updateDisplay();
+        });
+
+        listenBtn.addEventListener('click', function() {
+            if (currentMode === 'phone') {
+                // Speak phone number digit by digit
+                const phoneText = currentPhoneNumber.map(digit => numberToKorean(digit, true)).join(' ');
+                const utterance = new SpeechSynthesisUtterance(phoneText);
+                utterance.lang = 'ko-KR';
+                speechSynthesis.speak(utterance);
+            } else {
+                const text = mode === 'number' ? numberToKorean(currentNumber, isSino) : currentNumber.toString();
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = 'ko-KR';
+                speechSynthesis.speak(utterance);
+            }
+        });
+
+        resetBtn.addEventListener('click', function() {
+            if (event.shiftKey || confirm('Reset all scores?')) {
+                stats.correct = 0;
+                stats.consecutive = 0;
+                stats.total = 0;
+                updateStats();
+                updateDisplay();
+            }
+        });
+
+        verifyBtn.addEventListener('click', function() {
+            const input = numberInput.value.trim();
+            let correct = false;
+            
+            if (currentMode === 'phone') {
+                if (mode === 'number') {
+                    // Show Number: user should enter Korean/Hanja digits
+                    const digitsInput = input.replace(/[^가-힣]/g, '|').split('|').filter(x => x);
+                    const expected = currentPhoneNumber.map(digit => numberToKorean(digit, true));
+                    correct = digitsInput.length === expected.length && 
+                              digitsInput.every((val, i) => {
+                                  if (val === expected[i]) return true;
+                                  // Allow 공 alternative for 0 in phone mode
+                                  if (currentPhoneNumber[i] === 0 && (val === '공' || val === NUMBERS_DATA.sino[0].text)) return true;
+                                  return false;
+                              });
+                    // Check if user wrote in hanja (score 2 points)
+                    if (correct) {
+                        const hanjaRegex = /[\u4e00-\u9fff]/g;
+                        const hansCount = (input.match(hanjaRegex) || []).length;
+                        if (hansCount > 0) {
+                            stats.correct += 1; // +1 extra point for hanja
+                        }
+                    }
+                } else {
+                    // Show Text: user should enter digits
+                    const digitsOnly = input.replace(/[^0-9]/g, '');
+                    const expectedDigits = currentPhoneNumber.join('');
+                    correct = digitsOnly === expectedDigits;
+                }
+            } else {
+                if (mode === 'number') {
+                    // Input should be Korean text
+                    const expected = numberToKorean(currentNumber, isSino);
+                    correct = input === expected || 
+                              (currentNumber === 0 && isSino && input === NUMBERS_DATA.sino[0].altText);
+                } else {
+                    // Input should be number
+                    correct = parseInt(input) === currentNumber;
+                }
+            }
+            
+            stats.total++;
+            if (correct) {
+                stats.correct++;
+                stats.consecutive++;
+                numberInput.style.borderColor = 'green';
+            } else {
+                stats.consecutive = 0;
+                numberInput.style.borderColor = 'red';
+            }
+            
+            updateStats();
+            setTimeout(() => {
+                numberInput.value = '';
+                numberInput.style.borderColor = 'var(--medium-gray)';
+                updateDisplay();
+            }, 1500);
+        });
+
+        function updateStats() {
+            correctAnswersEl.textContent = stats.correct;
+            consecutiveAnswersEl.textContent = `${stats.consecutive} consecutively`;
+            totalAttemptsEl.textContent = stats.total;
+        }
+
+        // Initialize sino toggle container max-width on page load
+        const sinoContainer = document.getElementById('sinoToggleContainer');
+        if (sinoContainer && currentDifficultyIndex > 1) {
+            sinoContainer.style.maxWidth = '0px';
+        }
+
+        // Recalculate font size on window resize
+        window.addEventListener('resize', () => {
+            calculateOptimalFontSize(numberCharacter);
+        });
+
+        init();
+    </script>
+</body>
+</html>

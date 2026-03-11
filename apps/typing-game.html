@@ -1,0 +1,1657 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>한국어 타이핑 — Korean Typing Defense</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Jua&family=Noto+Sans+KR:wght@400;700&display=swap');
+
+:root {
+  --bg-top:#c8c8d4; --bg-bot:#9898a8;
+  --primary-color: rgb(102, 126, 234);
+  --secondary-color: rgb(118, 75, 162);
+}
+*{ box-sizing:border-box; margin:0; padding:0; }
+html,body{ width:100%; height:100%; overflow:hidden;
+  font-family:'Jua','Noto Sans KR',sans-serif;
+  touch-action:manipulation; }
+body{
+  background:linear-gradient(180deg,var(--bg-top) 0%,var(--bg-bot) 100%);
+  transition:background 2s ease;
+}
+
+/* ===== SCREENS ===== */
+.screen{
+  position:fixed; inset:0; z-index:200;
+  display:flex; flex-direction:column;
+  align-items:center; justify-content:center;
+  transition:opacity .4s;
+}
+.screen.off{ opacity:0; pointer-events:none; }
+
+/* Gradient background shared by title + pause */
+.menu-screen{
+  background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+}
+
+/* White content card */
+.menu-card{
+  position:relative;
+  background:#fff;
+  border-radius:20px;
+  padding:40px;
+  display:flex; flex-direction:column;
+  align-items:center;
+  gap:6px;
+  width:min(720px, 96vw);
+  max-height:92vh;
+  overflow-y:auto;
+  box-shadow:0 20px 60px rgba(0,0,0,.25);
+  color:#1a1a2e;
+}
+.menu-card::-webkit-scrollbar{ width:4px; }
+.menu-card::-webkit-scrollbar-thumb{ background:rgba(0,0,0,.15); border-radius:2px; }
+
+/* ===== TITLE ===== */
+#scr-title h1{
+  font-size: 36px;
+  color: #667eea;
+  margin-bottom:2px; text-align:center;
+}
+#scr-title .sub{
+  font-size:clamp(.7rem,1.5vw,.85rem);
+  color:#888; margin-bottom:16px;
+  font-family:'Noto Sans KR',sans-serif;
+}
+@keyframes glow{
+  0%,100%{text-shadow:0 0 20px #ff448866;}
+  50%{text-shadow:0 0 50px #ff4488ff,0 0 90px #ff448840;}
+}
+
+.setup-wrap{
+  display:grid; grid-template-columns:1fr 1fr;
+  gap:12px; width:100%; margin-bottom:16px;
+}
+.scard{
+  background:#f7f7fa;
+  border:1px solid rgba(0,0,0,.07);
+  border-radius:14px; padding:14px 16px;
+  color:#1a1a2e;
+}
+.scard h3{
+  font-size:.65rem; text-transform:uppercase;
+  letter-spacing:2px; color:#3e3e3e; margin-bottom:10px;
+}
+.scard.wide{ grid-column:1/-1; }
+
+/* lives card */
+#scard-lives{ display:flex; flex-direction:column; }
+#scard-lives h3{ margin-bottom:auto; }
+.lives-row{
+  display:flex; align-items:center;
+  justify-content:center; gap:10px; flex:1;
+}
+.lives-row label{ font-size:1rem; opacity:.65; }
+#inp-lives{
+  width:68px; padding:6px 8px;
+  background:#fff; border:1px solid #ddd;
+  border-radius:8px; color:#2b2b2b;
+  font-family:inherit; font-size:1.2rem; text-align:center;
+}
+#lives-max{ font-size:.68rem; color:#646464; text-align:center; margin-top:auto; }
+#pl-lives{ font-size:.88rem; margin-top:8px; order:99; max-width:880px; }
+
+/* hero picker */
+.epicker{
+  display:flex; flex-wrap:wrap; gap:6px;
+  max-height:100px; overflow-y:auto;
+}
+.epicker::-webkit-scrollbar{ width:4px; }
+.epicker::-webkit-scrollbar-thumb{ background:rgba(0,0,0,.15); border-radius:2px; }
+.eopt{
+  font-size:1.35rem; cursor:pointer;
+  padding:3px 4px; border-radius:8px;
+  transition:transform .13s,background .13s;
+  border:2px solid transparent;
+}
+.eopt:hover{ transform:scale(1.2); background:rgba(0,0,0,.06); }
+.eopt.sel{ border-color:#667eea; background:rgba(102,126,234,.1); }
+
+/* skin/gender row */
+.skin-row{
+  display:flex; flex-wrap:wrap; gap:6px;
+  margin-top:8px; padding-top:8px;
+  border-top:1px solid rgba(0,0,0,.07);
+  align-items:center;
+}
+.skin-row label{ font-size:.65rem; color:#848484; margin-right:4px; }
+.skin-btn{
+  font-size:1.1rem; cursor:pointer;
+  padding:2px 4px; border-radius:6px;
+  border:2px solid transparent; background:none;
+  transition:all .12s;
+}
+.skin-btn:hover{ background:rgba(0,0,0,.06); }
+.skin-btn.sel{ border-color:#667eea; background:rgba(102,126,234,.1); }
+.gender-btn{
+  font-size:.72rem; cursor:pointer;
+  padding:3px 8px; border-radius:6px;
+  border:1px solid #ddd; background:none;
+  color:#555; transition:all .12s;
+}
+.gender-btn:hover{ background:rgba(0,0,0,.05); }
+.gender-btn.sel{ border-color:#667eea; background:rgba(102,126,234,.1); color:#667eea; }
+
+/* weapon groups */
+.wg-list{ display:flex; flex-direction:column; gap:5px; max-height:210px; overflow-y:auto; }
+.wg-list::-webkit-scrollbar{ width:4px; }
+.wg-list::-webkit-scrollbar-thumb{ background:rgba(0,0,0,.15); border-radius:2px; }
+.wgbtn{
+  background:#fff; border:1px solid #e0e0e0;
+  border-radius:9px; padding:7px 11px;
+  color:#333; cursor:pointer;
+  font-family:inherit; font-size:.82rem;
+  transition:all .13s; text-align:left;
+}
+.wgbtn:hover{ background:#f0f0f5; }
+.wgbtn.sel{ border-color:#667eea; background:rgba(102,126,234,.08); color:#667eea; }
+.wg-lbl{ font-size:.9rem; color:#646464; display:block; margin-bottom:2px; }
+
+#btn-play{
+  padding:13px 56px; font-size:1.25rem;
+  font-family:inherit; border:none; border-radius:50px;
+  background:linear-gradient(135deg,var(--primary-color),var(--secondary-color));
+  color:#fff; cursor:pointer;
+  box-shadow:0 8px 28px rgba(102,126,234,.4);
+  transition:all .18s; letter-spacing:1px;
+}
+#btn-play:hover{ transform:translateY(-3px); box-shadow:0 14px 36px rgba(102,126,234,.6); }
+
+/* ===== GAMEOVER ===== */
+#scr-over{
+  background:rgba(6,3,16,.94);
+  color:#fff; gap:12px;
+  backdrop-filter:blur(12px);
+}
+#scr-over h2{ font-size:clamp(2rem,6vw,3.5rem); text-align:center; }
+#go-detail{ font-size:.9rem; opacity:.65; text-align:center; }
+#go-hiscore{ font-size:.85rem; color:#ffd700; opacity:.9; }
+#btn-restart{
+  padding:11px 38px; font-size:1rem;
+  font-family:inherit;
+  border:2px solid #ff4488; border-radius:50px;
+  background:transparent; color:#ff4488;
+  cursor:pointer; transition:all .18s; margin-top:8px;
+}
+#btn-restart:hover{ background:#ff4488; color:#fff; }
+
+/* ===== PAUSE CARD ===== */
+.pause-card{
+  position:relative;
+  background:#fff;
+  border-radius:20px;
+  padding:36px 48px 32px;
+  display:flex; flex-direction:column;
+  align-items:center; gap:14px;
+  box-shadow:0 20px 60px rgba(0,0,0,.25);
+  min-width:280px;
+  color:#1a1a2e;
+}
+#scr-pause h2{
+  font-size:clamp(1.8rem,5vw,2.8rem);
+  color: #667eea;
+}
+.pause-btns{ display:flex; flex-direction:column; gap:10px; margin-top:4px; width:100%; }
+.pause-btn{
+  padding:12px 40px; font-size:1rem;
+  font-family:inherit; border-radius:50px;
+  cursor:pointer; transition:all .18s;
+  letter-spacing:.5px; width:100%;
+}
+#btn-resume{
+  background:linear-gradient(135deg,var(--primary-color),var(--secondary-color));
+  border:none; color:#fff;
+  box-shadow:0 6px 20px rgba(102,126,234,.35);
+}
+#btn-resume:hover{ transform:translateY(-2px); box-shadow:0 10px 28px rgba(102,126,234,.55); }
+#btn-menu{
+  background:transparent;
+  border:2px solid #d0d0d0;
+  color:#3e3e3e;
+}
+#btn-menu:hover{ border-color:#aaa; color:#1a1a2e; }
+
+/* ===== CLOSE BUTTON (inside .menu-card / .pause-card) ===== */
+.close-btn{
+  position:absolute; top:14px; right:14px;
+  width:28px; height:28px; border-radius:50%;
+  background:#ff6b6b; border:none;
+  color:#fff; font-size:13px; cursor:pointer;
+  display:flex; align-items:center; justify-content:center;
+  transition:all .25s; opacity:0; padding:0;
+  z-index:10;
+}
+.close-btn::before{ content:"✕"; }
+.close-btn:hover{ background:#ff5252; transform:scale(1.1); }
+.menu-card:hover .close-btn,
+.pause-card:hover .close-btn{ opacity:.33; }
+.close-btn:hover{ opacity:1 !important; }
+@media(max-width:600px){
+  .close-btn{ opacity:.5; }
+  .menu-card{ padding:20px 16px 18px; }
+  .pause-card{ padding:28px 28px 24px; }
+}
+
+/* ===== FOOTER LINK (title screen) ===== */
+#title-footer{
+  font-size:14px; color:#fff;
+  font-family:'Noto Sans KR',sans-serif;
+  margin-top:30px; text-align:center;
+}
+#title-footer a{ color:#fff; text-decoration:none; opacity:1; }
+#title-footer a:hover{ text-decoration:underline; }
+
+/* ===== CANVAS ===== */
+#gc{ position:fixed; inset:0; pointer-events:none; z-index:1; }
+
+/* ===== HUD ===== */
+#hud{
+  position:fixed; top:8px; left:8px; right:8px;
+  display:none; align-items:stretch; gap:8px;
+  justify-content:space-between;
+  z-index:50;
+}
+#hcard-wave{ pointer-events:none; min-width:160px; }
+#hcard-score{ pointer-events:all; min-width:130px; }
+
+.hcard{
+  background:rgba(0,0,0,.38);
+  backdrop-filter:blur(10px);
+  border:1px solid rgba(255,255,255,.18);
+  border-radius:12px; padding:7px 13px;
+  color:#fff; font-size:.78rem;
+  display:flex; flex-direction:column; justify-content:space-between;
+}
+.hlbl{
+  font-size:.6rem; opacity:.5;
+  text-transform:uppercase; letter-spacing:1.5px;
+  margin-bottom:6px;
+}
+
+/* Wave card body: ring on left, text on right */
+.wave-body{
+  display:flex; align-items:center; gap:10px;
+}
+.wave-ring-wrap{ flex-shrink:0; }
+.wave-text{ display:flex; flex-direction:column; }
+#hw-num{ font-size:1.5rem; font-weight:bold; line-height:1; }
+#hw-boss{ font-size:.62rem; opacity:.55; margin-top:2px; white-space:nowrap; }
+
+/* Score card body: vals on left, pause on right */
+.score-body{
+  display:flex; align-items:center; gap:10px; justify-content:flex-end;
+}
+.score-vals{ display:flex; flex-direction:column; text-align:right; }
+#hs-val{ font-size:1.5rem; font-weight:bold; color:#ffd700; line-height:1; }
+#hs-best-row{ font-size:.62rem; opacity:.4; margin-top:2px; }
+#btn-pause{
+  flex-shrink:0;
+  width:48px; height:48px;
+  background:rgba(255,255,255,.08);
+  border:1px solid rgba(255,255,255,.2);
+  border-radius:8px;
+  color:#fff; font-size:1.5rem; line-height:0;
+  cursor:pointer; transition:all .15s;
+  display:flex; align-items:center; justify-content:center;
+}
+#btn-pause:hover{ background:rgba(255,255,255,.2); }
+
+@media(max-width:600px){
+  #hud{ gap:5px; }
+  #hcard-wave{ min-width:0; padding:6px 10px; }
+  #hcard-score{ min-width:0; padding:6px 10px; }
+  #hw-num{ font-size:1.1rem; }
+  .wave-ring-wrap svg{ width:34px; height:34px; }
+  #hs-val{ font-size:1.1rem; }
+  #hs-best-row{ display:none; }
+  #btn-pause{ width:36px; height:36px; font-size:1.1rem; }
+}
+
+/* ===== PLAYER AREA ===== */
+#player-area{
+  position:fixed; bottom:0; left:0; right:0;
+  display:none; flex-direction:column;
+  align-items:center; padding-bottom:10px;
+  z-index:40;
+}
+#pl-name{ font-size:.72rem; color:#fff; text-shadow:0 1px 4px rgba(0,0,0,.9); margin-bottom:8px; }
+#pl-emoji{
+  font-size:4.5rem;
+  filter:drop-shadow(0 4px 8px rgba(0,0,0,.5));
+  transition:transform .12s;
+  line-height:1;
+  margin-bottom:8px;
+}
+#inp-wrap{
+  display:flex; align-items:center; gap:8px;
+  background:rgba(0,0,0,.55); backdrop-filter:blur(12px);
+  border:2px solid rgba(255,255,255,.3); border-radius:30px;
+  padding:8px 18px; width:min(380px,92vw);
+  transition:border-color .18s;
+}
+#inp-wrap:focus-within{ border-color:rgba(255,255,255,.7); }
+#spell-ico{ font-size:1.05rem; }
+#typing{
+  flex:1; background:none; border:none; outline:none;
+  color:#fff; font-family:'Noto Sans KR',sans-serif;
+  font-size:1rem; caret-color:#ff4488;
+}
+#typing::placeholder{ color:rgba(255,255,255,.3); }
+
+/* ===== ANNOUNCEMENTS ===== */
+#announce{
+  position:fixed; inset:0;
+  display:flex; align-items:center; justify-content:center;
+  pointer-events:none; z-index:60;
+}
+#announce-txt{
+  font-size:clamp(2rem,7vw,4.5rem); color:#fff;
+  text-shadow:0 0 30px rgba(255,210,80,.8),0 4px 10px rgba(0,0,0,.6);
+  opacity:0; transition:opacity .35s ease;
+  text-align:center; padding:0 16px;
+}
+#announce-txt.on{ opacity:1; }
+
+/* ===== CONFETTI ===== */
+#cfx{ position:fixed; inset:0; pointer-events:none; z-index:55; overflow:hidden; }
+.cp{
+  position:absolute; top:-18px; border-radius:2px;
+  animation:cffall linear forwards;
+}
+@keyframes cffall{ to{ transform:translateY(110vh) rotate(720deg); opacity:0; } }
+#well-done{
+  position:fixed; top:50%; left:50%;
+  transform:translate(-50%,-50%);
+  font-size:clamp(2rem,7vw,4rem); color:#fff;
+  text-shadow:0 0 30px rgba(120,220,255,.9);
+  opacity:0; transition:opacity .45s;
+  z-index:56; pointer-events:none; white-space:nowrap;
+}
+#well-done.on{ opacity:1; }
+</style>
+</head>
+<body>
+
+<!-- TITLE -->
+<div id="scr-title" class="screen menu-screen">
+  <div class="menu-card">
+    <button class="close-btn" onclick="window.location.href='../index.html'"></button>
+    <h1>🇰🇷 한국어 타이핑</h1>
+    <p class="sub">Korean Typing Defense — Defeat monsters by typing!</p>
+    <div class="setup-wrap">
+
+      <!-- Hero picker -->
+      <div class="scard wide">
+        <h3>Choose your hero</h3>
+        <div class="epicker" id="hero-pick"></div>
+        <div class="skin-row" id="skin-row" style="display:none">
+          <label>Skin:</label>
+          <div id="skin-btns"></div>
+          &nbsp;
+          <label>Gender:</label>
+          <div id="gender-btns"></div>
+        </div>
+      </div>
+
+      <!-- Weapon style -->
+      <div class="scard">
+        <h3>Weapon style</h3>
+        <div class="wg-list" id="wg-pick"></div>
+      </div>
+
+      <!-- Starting lives -->
+      <div class="scard" id="scard-lives">
+        <h3>Starting Lives</h3>
+        <div class="lives-row">
+          <label>❤️ ×</label>
+          <input type="number" id="inp-lives" min="1" max="100" value="5">
+        </div>
+        <p id="lives-max">Max 100</p>
+      </div>
+
+    </div>
+    <button id="btn-play">▶ 게임 시작!</button>
+  </div>
+  <p id="title-footer">
+    <a href="../index.html">🇰🇷 한국말 공부</a>ㅤ•ㅤBuilt with care by <a href="https://github.com/lluckymou" target="_blank">llucmou 🌲</a>
+  </p>
+</div>
+
+<!-- GAMEOVER -->
+<div id="scr-over" class="screen off">
+  <h2 id="go-title">🪦 게임 오버</h2>
+  <div id="go-detail"></div>
+  <div id="go-hiscore"></div>
+  <button id="btn-restart">↩ Try Again</button>
+</div>
+
+<!-- PAUSE -->
+<div id="scr-pause" class="screen menu-screen off">
+  <div class="pause-card">
+    <button class="close-btn" onclick="window.location.href='../index.html'"></button>
+    <h2>⏸ Paused</h2>
+    <div class="pause-btns">
+      <button class="pause-btn" id="btn-resume">▶ Resume</button>
+      <button class="pause-btn" id="btn-menu">↩ Main Menu</button>
+    </div>
+  </div>
+</div>
+
+<canvas id="gc"></canvas>
+
+<!-- HUD -->
+<div id="hud">
+  <div class="hcard" id="hcard-wave">
+    <div class="hlbl">Wave</div>
+    <div class="wave-body">
+      <div class="wave-ring-wrap">
+        <svg id="wave-ring" viewBox="0 0 36 36" width="44" height="44">
+          <circle class="ring-bg" cx="18" cy="18" r="15.9" fill="none" stroke="rgba(255,255,255,.15)" stroke-width="3"/>
+          <circle id="ring-arc" cx="18" cy="18" r="15.9" fill="none" stroke="#4caf50" stroke-width="3"
+            stroke-dasharray="0 100" stroke-linecap="round"
+            transform="rotate(-90 18 18)" style="transition:stroke-dasharray .3s ease"/>
+        </svg>
+      </div>
+      <div class="wave-text">
+        <div id="hw-num">1</div>
+        <div id="hw-boss">Boss in 10</div>
+      </div>
+    </div>
+  </div>
+  <div class="hcard" id="hcard-score">
+    <div class="hlbl">Score</div>
+    <div class="score-body">
+      <div class="score-vals">
+        <div id="hs-val">0</div>
+        <div id="hs-best-row">Best: <span id="hs-best">0</span></div>
+      </div>
+      <button id="btn-pause">⏸</button>
+    </div>
+  </div>
+</div>
+
+<!-- PLAYER -->
+<div id="player-area">
+  <div id="pl-name"></div>
+  <div id="pl-emoji">😊</div>
+  <div id="inp-wrap">
+    <span id="spell-ico">✨</span>
+    <input id="typing" type="text"
+      placeholder="Type Korean here…"
+      autocomplete="off" autocorrect="off"
+      autocapitalize="none" spellcheck="false"
+      inputmode="text">
+  </div>
+  <div id="pl-lives"></div>
+</div>
+
+<!-- ANNOUNCE / CONFETTI -->
+<div id="announce"><div id="announce-txt"></div></div>
+<div id="cfx"><div id="well-done">잘했어요! 🎉</div></div>
+
+<script>
+/* ================================================================
+   WORD DICTIONARY — sorted by jamo difficulty (d = keypress count)
+================================================================ */
+const RAW = [
+  // ── 2 jamo (single simple syllable, no batchim) ─────────────────────────────
+  "나","저","너","네","다","이","한","가","서","도","에","의","와","과",
+  "밥","물","집","눈","귀","입","코","손","팔","발","배","등","몸","뼈",
+  "개","소","말","닭","곰","새","벌","뱀","꿀","쥐","양","돼지",
+  "산","강","숲","달","별","불","해","비","땅","숲","길","곳","옆",
+  "봄","가을","두","세","열","백",
+  "차","배","기","다","또","좀","잘","네","왜","뭐","어","응","음","아","오","우",
+  "해","달","밤","낮","빛","힘","꿈","글","말","쪽","앞","뒤","위","옆",
+  "피","뇨","뼈","뺨","코","혀",
+
+  // ── 3 jamo (one syllable with batchim, or simple 2-syl) ─────────────────────
+  "국","밥","산","강","집","방","책","밤","눈","달","별","꽃","풀","씨",
+  "문","창","장","침","벽","돌","쌀","곡","숲","밭","논","흙","잎",
+  "오늘","내일","어제","지금","나중","항상","가끔","빨리","천천히",
+  "아기","아이","사람","남자","여자","언니","오빠","형","누나",
+  "봄비","눈물","기쁨","슬픔","화남","두려움",
+  "우리","자기","그것","이것","저것","무엇","어디","언제","어떻게",
+  "크다","작다","많다","적다","좋다","나쁘다","빠르다","느리다",
+  "먹다","마시다","자다","일어나다","걷다","뛰다","앉다","서다",
+
+  // ── 4 jamo ─────────────────────────────────────────────────────────────────
+  "엄마","아빠","할머니","할아버지","형","누나","언니","오빠","친구","가족",
+  "아기","사람","학교","회사","병원","카페","공원","도서관","시장","마트",
+  "빨간","파란","노란","초록","흰색","검정","분홍","하늘","보라","갈색","회색","주황",
+  "봄비","가을","태풍","구름","바람","햇빛","눈사람","무지개","안개","서리",
+  "삼겹살","김밥","라면","치킨","피자","커피","주스","우유","빵","과자","케이크","아이스크림",
+  "사과","배","포도","딸기","바나나","오렌지","수박","참외","복숭아","레몬","망고","키위",
+  "당근","양파","감자","고구마","버섯","오이","토마토","배추","시금치","파","마늘","생강",
+  "강아지","고양이","토끼","햄스터","앵무새","거북이","금붕어",
+  "셔츠","바지","치마","코트","신발","양말","모자","장갑","목도리","가방","지갑",
+  "숟가락","젓가락","그릇","냄비","칼","도마","냉장고","전자레인지",
+  "의자","책상","침대","소파","거울","시계","전화기",
+
+  // ── 5-6 jamo ────────────────────────────────────────────────────────────────
+  "안녕","고마워","미안해","괜찮아","좋아요","싫어요","알아요","몰라요","맞아요","됐어요",
+  "행복해","슬퍼요","화났어","무서워","재밌어","지루해","피곤해","신나요","졸려요",
+  "감사해","반가워요","어서와","잘 자요","사랑해","보고싶어","그리워요",
+  "학생","선생님","의사","간호사","경찰","요리사","가수","배우","작가","운동선수",
+  "서울","부산","인천","대구","광주","한국","일본","미국","중국","영국","프랑스","독일",
+  "하나","둘","셋","넷","다섯","여섯","일곱","여덟","아홉","열","스물","서른","백","천",
+  "일","이","삼","사","오","육","칠","팔","구","십",
+  "월요일","화요일","수요일","목요일","금요일","토요일","일요일",
+  "일월","이월","삼월","사월","오월","유월","칠월","팔월","구월","시월","십일월","십이월",
+  "아침","점심","저녁","새벽","밤","낮","오전","오후",
+  "봄","여름","가을","겨울",
+  "동쪽","서쪽","남쪽","북쪽","왼쪽","오른쪽","앞쪽","뒤쪽","위쪽","아래",
+  "크기","무게","거리","속도","온도","가격","나이","키","번호",
+
+  // ── 7-9 jamo ────────────────────────────────────────────────────────────────
+  "안녕하세요","감사합니다","죄송합니다","잘 지내요","처음 뵙겠습니다",
+  "재미있어요","재미없어요","힘들어요","쉬워요","어려워요","아름다워요",
+  "빨간색","파란색","노란색","초록색","분홍색","보라색","주황색","하늘색",
+  "비빔밥","떡볶이","불고기","냉면","된장찌개","삼계탕","해물파전","순두부찌개","잡채","갈비탕",
+  "자동차","자전거","지하철","비행기","핸드폰","컴퓨터","냉장고","세탁기","청소기","에어컨",
+  "고양이","원숭이","코끼리","호랑이","사자","기린","펭귄","독수리","악어","하마",
+  "공부하다","일하다","운동하다","여행하다","수영하다","요리하다","청소하다","쇼핑하다",
+  "따뜻해요","시원해요","습해요","건조해요","맑아요","흐려요","추워요","더워요",
+  "얼마예요","어디예요","언제예요","몇 시예요","어떻게요","왜 그래요",
+  "배가 고파요","배가 불러요","목이 말라요","졸려요","아파요","피곤해요",
+
+  // ── 10-14 jamo ──────────────────────────────────────────────────────────────
+  "잘 먹겠습니다","맛있어요","배불러요","배고파요",
+  "도와주세요","조심하세요","잠깐만요","생각해요","기억나요","이해했어요",
+  "걱정돼요","설레요","부끄러워요","자랑스러워요","외로워요","그리워요","감동받았어요",
+  "경복궁","남산타워","인사동","명동","백화점","편의점","영화관","놀이공원","동물원",
+  "비가 와요","눈이 와요","바람이 불어요","안개가 껴요","날씨가 좋아요","날씨가 나빠요",
+  "일어나다","기다리다","선택하다","결정하다","이해하다","노래하다","춤추다","그리다",
+  "한국 음식","한국 문화","한국 역사","한국 노래","한국 드라마","한국 영화",
+  "사진 찍어요","전화해요","문자해요","인터넷해요","게임해요",
+
+  // ── 15+ jamo ────────────────────────────────────────────────────────────────
+  "대한민국","한국어","영어","일본어","중국어","수학","과학","역사","음악","미술","체육",
+  "잘했어요","수고했어요","축하해요","화이팅","힘내세요","어떻게 지내세요",
+  "천천히 말해주세요","다시 말해주세요","생일 축하해요","좋은 아침","좋은 밤",
+  "소셜미디어","인터넷","프로그램","게임","데이터","앱","유튜브","인스타그램",
+  "서울특별시","인공지능","반도체","K-팝","드라마","올림픽","월드컵","환경오염","지구온난화",
+  "커뮤니케이션","디지털화","글로벌","인터내셔널","인프라스트럭처",
+  "무슨 일이에요","어디에 가요","뭐 먹고 싶어요","같이 가요","잘 부탁드립니다",
+];
+
+function countJamo(str) {
+  let n = 0;
+  for (const ch of str) {
+    const c = ch.charCodeAt(0);
+    if (c >= 0xAC00 && c <= 0xD7A3) {
+      n += 2 + (((c - 0xAC00) % 28) > 0 ? 1 : 0);
+    } else if (c > 0x20) n++;
+  }
+  return n;
+}
+const WORDS = RAW.map(t => ({ text: t, d: countJamo(t) }));
+
+/* ================================================================
+   CONSTANTS
+================================================================ */
+const MONSTERS = ['💩','👹','👺','👻','👽','👾','🤖','🧌','🧟','🧟‍♀️','🕷️','🦟','🦠','🪳','🐀'];
+
+const WEAPONS = {
+  magic:     { label: 'Magic',      e:['🔮','🪄','💫','🌀','⚡','🔥','❄️','🌪️','🪨','🧿','💠','🌙','🕯️','🪬','☄️','🪐']},
+  love:      { label: 'Love',       e:['💘','❤️','💥','💖','💗','💓','💞','💕','🩷','🧡','💛','💚','💙','💜','🩵','🤍','🖤'] },
+  fairy:     { label: 'Fairy',      e:['🧚','🦄','🌈','✨','💫','🪄','🍄','🧁','🫧','🦋','🌸','🌟','🪩','🪞','🪅']},
+  weapons:   { label: 'Weapons',    e:['🗡️','🪓','🔪','🏹','💣','🧨','⛏️','🪚','🔨','🛡️','🪃','🗡️']},
+  fast_food: { label: 'Fast Food',  e:['🍔','🍟','🥤','🍗','🌭','🍕','🌯','🥪','🍿','🧇','🥓','🍖','🥯','🍔','🍟']},
+  ocean:     { label: 'Ocean',      e:['🌊','🐙','🦈','🐬','🐟','🐠','🦑','🦀','🦞','🐚','🪸','🪼','🐳','🐋','🦭'] },
+  sweets:    { label: 'Sweets',     e:['🍭','🍬','🍫','🍩','🍪','🧁','🍰','🍦','🍧','🍨','🍮','🍯','🫧'] },
+  bakery:    { label: 'Bakery',     e:['🥐','🍞','🥖','🥨','🥯','🧇','🥞','🥧','🍪','🧁','🍰','🥪','🧈'] },
+  hearts:    { label: 'Hearts',     e:['❤️','💖','💗','💓','💞','💕','💘','💝','💟','🩷','🩵','💜','💛','🧡','🩶'] },
+  elements:  { label: 'Elements',   e:['🔥','💧','💨','🪨','❄️','⚡','🌪️','🧊','☄️','🌩️','🌈','🌊'] },
+  hulk:      { label: 'Hulk',       e:['💥','🏠','🏢','🏬','🏭','🚗','🚙','🚌','🚚','🛻','🪨','🌳','🏛️','🚜'] },
+  fire:      { label: 'Fire',       e:['🔥','🌋','🧨','💥','🌶️','☄️','🪔','🏮','🔦','🕯️','💣'] },
+  ice:       { label: 'Ice',        e:['❄️','🧊','🏔️','🌨️','🥶','🍧','🧿','🪨','⛄','🧊'] },
+  animals:   { label: 'Animals',    e:['🐶','🐱','🐯','🦁','🐘','🦒','🐵','🐸','🐍','🦅','🐝','🦋','🦍','🐺'] },
+  vehicles:  { label: 'Vehicles',   e:['🚗','🚙','🚌','🚚','🏎️','🚜','🛻','🏍️','🚲','🛵','✈️','🚀','🛸','🚁'] },
+  cyber:     { label: 'Cyber Hack', e:['💻','🖥️','⌨️','🖱️','💾','📀','🔌','📡','🛰️','🤖','🦾','🔋','🕹️','🎮','📱','💿'] },
+};
+
+/* Hero definitions: base emoji, whether it supports skin tones, gender variants.
+   For skin-tone support we store all 5 skin variants explicitly per gender to avoid
+   broken ZWJ insertion heuristics. */
+const SKIN_TONES = ['','🏻','🏼','🏽','🏾','🏿']; // '' = default yellow
+
+// Build a hero def with skin support using actual ZWJ sequences
+function heroWithSkins(neutral, man, woman) {
+  // neutral/man/woman are base (yellow/default) versions
+  // Skin variants are constructed by inserting the Fitzpatrick modifier
+  // after the first emoji codepoint of the base string.
+  function addSkin(base, skinMod) {
+    if (!skinMod) return base;
+    // Split into grapheme clusters via spread (works for most ZWJ sequences)
+    // Strategy: insert skin modifier after the very first unicode scalar
+    const cp = [...base]; // array of grapheme clusters
+    // Find first human-base codepoint and insert skin after it
+    // For simple single-person emoji: insert after [0]
+    // For ZWJ sequences like 🧑‍🏫: insert after [0] before ZWJ
+    // We reconstruct: first_char + skin + rest
+    return cp[0] + skinMod + cp.slice(1).join('');
+  }
+  return {
+    neutral: SKIN_TONES.map(s => addSkin(neutral, s)),
+    man:     man   ? SKIN_TONES.map(s => addSkin(man,   s)) : null,
+    woman:   woman ? SKIN_TONES.map(s => addSkin(woman, s)) : null,
+    hasSkin:   true,
+    hasGender: !!(man && woman),
+  };
+}
+
+function heroNoMod(emoji) {
+  return { neutral:[emoji], man:null, woman:null, hasSkin:false, hasGender:false };
+}
+
+const HERO_DEFS = [
+  // Faces — no skin/gender
+  heroNoMod('😊'), heroNoMod('😎'), heroNoMod('🤓'), heroNoMod('🥸'),
+  heroNoMod('😄'), heroNoMod('🤩'), heroNoMod('🥳'), heroNoMod('😤'), heroNoMod('🧐'),
+  // Professions — gender + skin
+  heroWithSkins('🧑‍💻','👨‍💻','👩‍💻'),
+  heroWithSkins('🧑‍🎓','👨‍🎓','👩‍🎓'),
+  heroWithSkins('🧑‍🔬','👨‍🔬','👩‍🔬'),
+  heroWithSkins('🧑‍🚀','👨‍🚀','👩‍🚀'),
+  heroWithSkins('🧑‍🍳','👨‍🍳','👩‍🍳'),
+  heroWithSkins('🧑‍🌾','👨‍🌾','👩‍🌾'),
+  heroWithSkins('🧑‍🚒','👨‍🚒','👩‍🚒'),
+  heroWithSkins('🧑‍⚕️','👨‍⚕️','👩‍⚕️'),
+  heroWithSkins('🧑‍🏫','👨‍🏫','👩‍🏫'),
+  heroWithSkins('🧑‍⚖️','👨‍⚖️','👩‍⚖️'),
+  heroWithSkins('🧑‍🎤','👨‍🎤','👩‍🎤'),
+  heroWithSkins('🧑‍🎨','👨‍🎨','👩‍🎨'),
+  heroWithSkins('🧑‍✈️','👨‍✈️','👩‍✈️'),
+  heroWithSkins('🧑‍🔧','👨‍🔧','👩‍🔧'),
+  // Heroes / fantasy — gender + skin
+  heroWithSkins('🦸','🦸‍♂️','🦸‍♀️'),
+  heroWithSkins('🦹','🦹‍♂️','🦹‍♀️'),
+  heroWithSkins('🧙','🧙‍♂️','🧙‍♀️'),
+  heroWithSkins('🧝','🧝‍♂️','🧝‍♀️'),
+  heroWithSkins('🧜','🧜‍♂️','🧜‍♀️'),
+  // Skin only (no gender variant)
+  { neutral: SKIN_TONES.map(s => '🥷'+(s||'')), man:null, woman:null, hasSkin:true,  hasGender:false },
+  { neutral: SKIN_TONES.map(s => '🤴'+(s||'')), man:null, woman:null, hasSkin:true,  hasGender:false },
+  { neutral: SKIN_TONES.map(s => '👸'+(s||'')), man:null, woman:null, hasSkin:true,  hasGender:false },
+  { neutral: SKIN_TONES.map(s => '🎅'+(s||'')), man:null, woman:null, hasSkin:true,  hasGender:false },
+  { neutral: SKIN_TONES.map(s => '🤶'+(s||'')), man:null, woman:null, hasSkin:true,  hasGender:false },
+  // Police — gender + skin
+  heroWithSkins('👮','👮‍♂️','👮‍♀️'),
+  // Animals / fun — no mod
+  heroNoMod('🐱'), heroNoMod('🐶'), heroNoMod('🐸'), heroNoMod('🐧'),
+  heroNoMod('🦊'), heroNoMod('🐺'), heroNoMod('🦝'), heroNoMod('🦄'),
+  heroNoMod('🐻'), heroNoMod('🐼'), heroNoMod('🐨'), heroNoMod('🦁'),
+  heroNoMod('🐯'), heroNoMod('🦖'), heroNoMod('👽'), heroNoMod('🤖'),
+];
+
+const BGS = [
+  ['#c8c8d4','#9898a8'],
+  ['#ffd6e8','#ffb3cc'],
+  ['#c6eeff','#9bd4f5'],
+  ['#c6ffdb','#9bf5bc'],
+  ['#fffbc6','#fff3a0'],
+  ['#f0c6ff','#e09bf5'],
+  ['#ffc6c6','#f59b9b'],
+  ['#c6fff3','#9bf5e8'],
+  ['#ffe8c6','#ffd4a0'],
+  ['#e8c6ff','#d4a0f5'],
+];
+
+/* ================================================================
+   STATE
+================================================================ */
+const G = {
+  phase: 'title',
+  wave: 1,
+  wPhase: 'idle',
+  playerHP: 5, playerMax: 5,
+  hero: '😊', heroDefIdx: 0,
+  heroSkinIdx: 0, heroGender: 'neutral',
+  wgroup: 'magic',
+  nextSpell: '🔮',
+  score: 0, hiScore: parseInt(localStorage.getItem('kth_hi')||'0'),
+  monsters: [], projs: [], parts: [],
+  queue: [], qTotal: 0, killed: 0,
+  spawnT: 0, spawnCap: 2,
+  last: 0,
+  W: window.innerWidth,
+  H: window.innerHeight,
+  vH: window.innerHeight,
+  isMob: window.innerWidth < 600,
+};
+
+/* ================================================================
+   DOM REFS
+================================================================ */
+const canvas   = document.getElementById('gc');
+const ctx      = canvas.getContext('2d');
+const scrTitle = document.getElementById('scr-title');
+const scrOver  = document.getElementById('scr-over');
+const hudEl    = document.getElementById('hud');
+const paEl     = document.getElementById('player-area');
+const plEmoji  = document.getElementById('pl-emoji');
+const plLives  = document.getElementById('pl-lives');
+const typing   = document.getElementById('typing');
+const hwNum    = document.getElementById('hw-num');
+const hwBoss   = document.getElementById('hw-boss');
+const hsVal    = document.getElementById('hs-val');
+const hsBest   = document.getElementById('hs-best');
+const ringArc  = document.getElementById('ring-arc');
+const annTxt   = document.getElementById('announce-txt');
+const wellDone = document.getElementById('well-done');
+const cfxEl    = document.getElementById('cfx');
+const spellIco = document.getElementById('spell-ico');
+
+/* ================================================================
+   TITLE SCREEN SETUP
+================================================================ */
+let _selHeroDef = HERO_DEFS[0];
+let _selSkin    = 0;    // index 0-5 into skin variants
+let _selGender  = 'neutral'; // neutral|man|woman
+
+function computeHeroEmoji() {
+  const def = _selHeroDef;
+  const skinIdx = def.hasSkin ? _selSkin : 0;
+  if (_selGender === 'man'   && def.man)   return def.man[skinIdx]   || def.man[0];
+  if (_selGender === 'woman' && def.woman) return def.woman[skinIdx] || def.woman[0];
+  return def.neutral[skinIdx] || def.neutral[0];
+}
+
+const hpick = document.getElementById('hero-pick');
+const skinRow = document.getElementById('skin-row');
+const skinBtns = document.getElementById('skin-btns');
+const genderBtns = document.getElementById('gender-btns');
+
+HERO_DEFS.forEach((def, idx) => {
+  const b = document.createElement('span');
+  b.className = 'eopt' + (idx === 0 ? ' sel' : '');
+  b.textContent = def.neutral[0];
+  b.onclick = () => {
+    hpick.querySelectorAll('.eopt').forEach(x => x.classList.remove('sel'));
+    b.classList.add('sel');
+    _selHeroDef = def;
+    _selSkin    = 0;
+    _selGender  = 'neutral';
+    updateSkinRow();
+    G.hero = computeHeroEmoji();
+    plEmoji.textContent = G.hero;
+  };
+  hpick.appendChild(b);
+});
+
+// Skin tone buttons
+const SKIN_LABELS = ['🖐️','🖐🏻','🖐🏼','🖐🏽','🖐🏾','🖐🏿'];
+SKIN_LABELS.forEach((lbl, i) => {
+  const b = document.createElement('button');
+  b.className = 'skin-btn' + (i === 0 ? ' sel' : '');
+  b.textContent = lbl;
+  b.onclick = () => {
+    skinBtns.querySelectorAll('.skin-btn').forEach(x => x.classList.remove('sel'));
+    b.classList.add('sel');
+    _selSkin = i;
+    G.hero = computeHeroEmoji();
+    plEmoji.textContent = G.hero;
+  };
+  skinBtns.appendChild(b);
+});
+
+// Gender buttons
+[['neutral','🧑'],['man','♂️'],['woman','♀️']].forEach(([g, lbl]) => {
+  const b = document.createElement('button');
+  b.className = 'gender-btn' + (g === 'neutral' ? ' sel' : '');
+  b.textContent = lbl;
+  b.onclick = () => {
+    genderBtns.querySelectorAll('.gender-btn').forEach(x => x.classList.remove('sel'));
+    b.classList.add('sel');
+    _selGender = g;
+    G.hero = computeHeroEmoji();
+    plEmoji.textContent = G.hero;
+  };
+  genderBtns.appendChild(b);
+});
+
+function updateSkinRow() {
+  const def = _selHeroDef;
+  skinRow.style.display   = (def.hasSkin || def.hasGender) ? 'flex' : 'none';
+  skinBtns.style.display  = def.hasSkin   ? '' : 'none';
+  genderBtns.style.display = def.hasGender ? '' : 'none';
+  // reset selection visuals
+  skinBtns.querySelectorAll('.skin-btn').forEach((b,i)  => b.classList.toggle('sel', i===0));
+  genderBtns.querySelectorAll('.gender-btn').forEach(b  => b.classList.toggle('sel', b.textContent==='🧑'));
+}
+
+// Weapon group buttons
+const wgpick = document.getElementById('wg-pick');
+Object.entries(WEAPONS).forEach(([k, wg]) => {
+  const b = document.createElement('button');
+  b.className = 'wgbtn' + (k === 'magic' ? ' sel' : '');
+  b.innerHTML = `<span class="wg-lbl">${wg.label}</span>${wg.e.slice(0,8).join('')}`;
+  b.onclick = () => {
+    wgpick.querySelectorAll('.wgbtn').forEach(x => x.classList.remove('sel'));
+    b.classList.add('sel');
+    // find key
+    const idx = [...wgpick.children].indexOf(b);
+    G.wgroup = Object.keys(WEAPONS)[idx] || 'magic';
+  };
+  wgpick.appendChild(b);
+});
+
+document.getElementById('btn-play').onclick   = startGame;
+document.getElementById('btn-restart').onclick = () => {
+  scrOver.classList.add('off');
+  scrTitle.classList.remove('off');
+  resetState();
+};
+document.getElementById('btn-pause').onclick   = pauseGame;
+document.getElementById('btn-resume').onclick  = resumeGame;
+document.getElementById('btn-menu').onclick    = () => {
+  document.getElementById('scr-pause').classList.add('off');
+  scrTitle.classList.remove('off');
+  resetState();
+};
+
+function pauseGame() {
+  if (G.phase !== 'play') return;
+  G.phase = 'paused';
+  document.getElementById('scr-pause').classList.remove('off');
+}
+
+function resumeGame() {
+  if (G.phase !== 'paused') return;
+  document.getElementById('scr-pause').classList.add('off');
+  G.phase = 'play';
+  G.last = performance.now();
+  requestAnimationFrame(loop);
+  typing.focus();
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    if (G.phase === 'play')   pauseGame();
+    else if (G.phase === 'paused') resumeGame();
+  }
+});
+
+hsBest.textContent = G.hiScore.toLocaleString();
+
+/* ================================================================
+   WORD PICKING — strictly controlled by wave
+   Wave 1:   d ≤ 2   (single syllable, 2 jamo max)
+   Wave 2:   d ≤ 3
+   Wave 3:   d ≤ 4
+   Wave 4:   d ≤ 5
+   Wave 5:   d ≤ 6
+   Wave 6-7: d ≤ 8 (start of 4+ jamo "hard" words)
+   Wave 8+:  d ≤ 10+
+================================================================ */
+function maxDiffForWave(wn) {
+  if (wn === 1) return 2;
+  if (wn === 2) return 3;
+  if (wn === 3) return 4;
+  if (wn === 4) return 5;
+  if (wn === 5) return 6;
+  if (wn <= 7)  return 8;
+  if (wn <= 9)  return 10;
+  if (wn <= 12) return 13;
+  if (wn <= 16) return 16;
+  return Math.min(35, 16 + Math.floor((wn - 16) * 0.8));
+}
+
+function minDiffForWave(wn) {
+  // ensure some easier words always appear too
+  return Math.max(2, Math.floor(maxDiffForWave(wn) * 0.3));
+}
+
+function pickWords(wn, count) {
+  const maxD = maxDiffForWave(wn);
+  const minD = minDiffForWave(wn);
+  let pool = WORDS.filter(w => w.d >= minD && w.d <= maxD);
+  if (pool.length < count) pool = WORDS.filter(w => w.d <= maxD);
+  if (pool.length < count) pool = WORDS;
+  const used = new Set(G.monsters.flatMap(m => m.words));
+  const sh = [...pool].sort(() => Math.random() - 0.5);
+  const out = [];
+  for (const w of sh) {
+    if (!used.has(w.text)) { out.push(w.text); used.add(w.text); }
+    if (out.length >= count) break;
+  }
+  while (out.length < count) out.push(sh[out.length % sh.length]?.text || '가');
+  return out;
+}
+
+/* ================================================================
+   MONSTER HP — tight control per wave
+================================================================ */
+function calcHP(wn) {
+  // Multi-life monsters appear from wave 5
+  if (wn < 5) return 1;
+  const r = Math.random();
+  if (wn < 7)  return r < 0.15 ? 2 : 1;
+  if (wn < 10) return r < 0.10 ? 3 : r < 0.35 ? 2 : 1;
+  const cap = Math.min(7, 1 + Math.floor(wn / 4));
+  return Math.max(1, cap - (r > 0.5 ? 1 : 0));
+}
+
+/* ================================================================
+   WAVE GENERATION — dynamic trigger-based spawning
+   Instead of pre-queuing all monsters, we use a budget system.
+   Each wave has a "point budget". Multi-HP monsters cost more points.
+   Monsters are released in groups; a new group triggers when
+   the previous group is sufficiently dealt with.
+================================================================ */
+function wavePointBudget(wn) {
+  if (wn === 1) return 1;      // tutorial: 1 monster
+  if (wn === 2) return 5;
+  if (wn === 3) return 8;
+  if (wn === 4) return 11;
+  return Math.floor(11 + (wn - 4) * 2.2);
+}
+
+function waveGroupSize(wn) {
+  // How many to send in each group
+  if (wn === 1) return 1;
+  if (wn <= 3)  return 2;
+  if (wn <= 6)  return 3;
+  if (wn <= 10) return 4;
+  return Math.min(6, 3 + Math.floor(wn / 6));
+}
+
+/* Build the wave's monster template list (budget-based) */
+function genWave(wn) {
+  const boss = wn % 10 === 0;
+  if (boss) {
+    const hp  = Math.min(5 + Math.floor(wn/10)*2, 15);
+    const wds = pickWords(wn, hp + 2);
+    return [{ type:'boss', hp, maxHp:hp, words:wds }];
+  }
+
+  const budget  = wavePointBudget(wn);
+  const templates = [];
+  let spent = 0;
+
+  while (spent < budget) {
+    const hp      = calcHP(wn);
+    const cost    = hp; // 1HP = 1pt, 2HP = 2pts, etc.
+    if (spent + cost > budget && templates.length > 0) break;
+    const wds = pickWords(wn, hp);
+    templates.push({ type:'normal', hp, maxHp:hp, words:wds });
+    spent += cost;
+  }
+
+  return templates;
+}
+
+/* ================================================================
+   JAMO KEY-COUNT (counts physical keypresses for a Korean word)
+   Double consonants/vowels (ㅃㅉㄸㄲㅆ, ㅒㅖ) = 2 keys
+   Compound vowels (ㅘㅙㅚㅝㅞㅟㅢ etc) = 2 keys
+   Compound batchim (ㄳㄵㄶㄺㄻㄼㄽㄾㄿㅀㅄ) = 2 keys
+================================================================ */
+function countJamoKeys(str) {
+  let n = 0;
+  for (const ch of str) {
+    const c = ch.charCodeAt(0);
+    if (c >= 0xAC00 && c <= 0xD7A3) {
+      // Decompose syllable
+      const v = c - 0xAC00;
+      const jong = v % 28;
+      const jung = Math.floor(v / 28) % 21;
+      const cho  = Math.floor(v / 28 / 21);
+
+      // Cho (initial consonant)
+      // Double initials: ㅃ(6) ㅉ(9) ㄸ(3) ㄲ(1) ㅆ(13) — mapped in cho table
+      const CHO_DOUBLE = new Set([1,3,6,9,13]); // indices of ㄲㄸㅃㅉㅆ
+      n += CHO_DOUBLE.has(cho) ? 2 : 1;
+
+      // Jung (vowel)
+      // Compound vowels: ㅘ(8)ㅙ(9)ㅚ(10)ㅝ(13)ㅞ(14)ㅟ(15)ㅢ(19) = 2 keys
+      // ㅒ(2) ㅖ(5) = 2 keys
+      const JUNG_2 = new Set([2,5,8,9,10,13,14,15,19]);
+      n += JUNG_2.has(jung) ? 2 : 1;
+
+      // Jongseong (final consonant), 0 = none
+      if (jong > 0) {
+        // Compound batchim: 3(ㄳ)4(ㄵ)5(ㄶ)8(ㄺ)9(ㄻ)10(ㄼ)11(ㄽ)12(ㄾ)13(ㄿ)14(ㅀ)17(ㅄ) = 2 keys
+        const JONG_2 = new Set([3,4,5,8,9,10,11,12,13,14,17]);
+        n += JONG_2.has(jong) ? 2 : 1;
+      }
+    } else if (c > 0x20) {
+      n += 1; // ASCII / space-separated
+    }
+  }
+  return n;
+}
+
+/* Total key count for all words a monster has */
+function monsterKeyCount(words) {
+  return words.reduce((s, w) => s + countJamoKeys(w), 0);
+}
+
+/* ----------------------------------------------------------------
+   Speed model
+   
+   An absolute beginner reading Hangul for the first time needs:
+     - READ time: ~2.5 sec per syllable to recognise the characters
+     - TYPE time: ~0.4 keys/sec (hunt-and-peck on an unfamiliar layout)
+   
+   Combined: totalSec = syllableCount * READ_SEC + keyCount / KPS
+   
+   Monster speed = travelDistance / totalSec
+   
+   Speed only grows when a boss is beaten (every 10 waves).
+   Each monster also gets ±25% random jitter so they arrive spread out.
+---------------------------------------------------------------- */
+const READ_SEC_PER_SYL_BASE  = 2.5;   // seconds to READ one syllable, world 1
+const READ_SEC_REDUCTION     = 0.18;  // read time shrinks per boss beaten
+const READ_SEC_MIN           = 0.15;  // floor (expert reads instantly)
+const KPS_BASE               = 0.4;   // keys/sec typing speed, world 1
+const KPS_PER_WORLD          = 0.18;  // typing speed increase per boss
+const KPS_CAP                = 6.0;   // expert cap
+
+function countSyllables(words) {
+  return words.reduce((n, w) => {
+    for (const ch of w) {
+      const c = ch.charCodeAt(0);
+      if (c >= 0xAC00 && c <= 0xD7A3) n++;
+    }
+    return n;
+  }, 0);
+}
+
+function worldLevel() {
+  return Math.floor((G.wave - 1) / 10); // 0 for waves 1-9, 1 for 10-19, etc.
+}
+
+function monsterSpeed(words, isBoss, mob) {
+  const keys  = monsterKeyCount(words);
+  const syls  = countSyllables(words);
+  const world = worldLevel();
+
+  const readSec = Math.max(READ_SEC_MIN,  READ_SEC_PER_SYL_BASE - world * READ_SEC_REDUCTION);
+  const kps     = Math.min(KPS_CAP,       KPS_BASE + world * KPS_PER_WORLD);
+  const totalSec = syls * readSec + keys / kps;
+
+  const travelH = G.vH * 0.72;
+  let spd = travelH / Math.max(1, totalSec);
+
+  if (isBoss) spd *= 0.55;
+  // Per-monster jitter ±25% — ensures they arrive at different times
+  spd *= 0.75 + Math.random() * 0.5;
+  return Math.max(20, spd);
+}
+/* ================================================================
+   MONSTER FACTORY
+================================================================ */
+let _id = 0;
+function mkMonster(tmpl) {
+  const mob  = G.W < 600;
+  const size = tmpl.type === 'boss' ? 82 : 32 + tmpl.hp * 14;
+  const spd  = monsterSpeed(tmpl.words, tmpl.type === 'boss', mob);
+  const x    = 60 + Math.random() * (G.W - 120);
+  return {
+    id:    ++_id,
+    type:  tmpl.type,
+    emoji: tmpl.type === 'boss' ? '🐉' : MONSTERS[Math.floor(Math.random()*MONSTERS.length)],
+    x, y: -(size + 20),
+    hp: tmpl.hp, maxHp: tmpl.maxHp,
+    words: [...tmpl.words], wi: 0,
+    get word() { return this.words[this.wi] || this.words[0]; },
+    size, spd,
+    tracking: false, dead: false,
+    flash: 0,
+    wob: Math.random() * Math.PI * 2,
+    scl: 1, sclDir: 1,
+  };
+}
+
+/* ================================================================
+   DYNAMIC SPAWN SYSTEM
+   State: G.wTemplates (remaining templates), G.activeGroup (current batch)
+   Triggers: wave start → send first group; on monster kill/reach player → maybe send more
+================================================================ */
+function initWaveSpawner(templates) {
+  G.wTemplates = [...templates];
+  G.wBudgetLeft = templates.length;
+  G.wKilled = 0;
+  G.wTotal  = templates.length;   // for progress bar
+  G.killed  = 0;
+  sendNextGroup();
+}
+
+function sendNextGroup() {
+  if (G.wTemplates.length === 0) return;
+  const n = waveGroupSize(G.wave);
+  for (let i = 0; i < n && G.wTemplates.length > 0; i++) {
+    const tmpl = G.wTemplates.shift();
+    // stagger slightly within a group
+    setTimeout(() => {
+      if (G.phase === 'play' && G.wPhase === 'spawning') {
+        G.monsters.push(mkMonster(tmpl));
+      }
+    }, i * 400);
+  }
+}
+
+// Called whenever a monster is removed (killed or reached player)
+function onMonsterRemoved() {
+  G.wKilled++;
+  updProgress();
+  // If remaining active monsters <= threshold, send more
+  const remaining = G.monsters.filter(m => !m.dead).length
+                  + (G.wTemplates ? G.wTemplates.length : 0);
+  if (remaining === 0 && G.wPhase === 'spawning') {
+    waveComplete();
+    return;
+  }
+  // Send next group when active count drops low
+  const active = G.monsters.filter(m => !m.dead).length;
+  const triggerThreshold = Math.max(1, waveGroupSize(G.wave) - 1);
+  if (active <= triggerThreshold && G.wTemplates && G.wTemplates.length > 0) {
+    sendNextGroup();
+  }
+}
+
+function updProgress() {
+  const pct = Math.min(100, G.wKilled / Math.max(1, G.wTotal) * 100);
+  // circumference of r=15.9 circle ≈ 100 units for easy % math
+  ringArc.setAttribute('stroke-dasharray', pct.toFixed(1) + ' 100');
+}
+
+/* ================================================================
+   PROJECTILES
+================================================================ */
+function rollNextSpell() {
+  const we = WEAPONS[G.wgroup].e;
+  G.nextSpell = we[Math.floor(Math.random() * we.length)];
+  spellIco.textContent = G.nextSpell;
+}
+
+function fire(monster) {
+  const emoji = G.nextSpell || WEAPONS[G.wgroup].e[0];
+  const px    = G.W / 2;
+  const py    = G.vH - playerAreaH() - 30;
+  const dx    = monster.x - px, dy = monster.y - py;
+  const d     = Math.hypot(dx, dy) || 1;
+  G.projs.push({
+    x:px, y:py, emoji, tid:monster.id,
+    vx:dx/d*520, vy:dy/d*520,
+    rot:0, rs:(Math.random()-.5)*18,
+    size: 48,
+    dead:false,
+  });
+  rollNextSpell(); // pre-roll the NEXT one immediately
+}
+
+/* ================================================================
+   PARTICLES
+================================================================ */
+function explode(x, y, sz) {
+  G.parts.push({ x, y, emoji:'💥', size:sz*.95, life:1, vy:-50 });
+  for (let i = 0; i < 6; i++) {
+    const a = Math.random()*Math.PI*2, s = 40+Math.random()*100;
+    G.parts.push({
+      x, y,
+      emoji:['⭐','✨','💫','🌟'][i%4],
+      size:10+Math.random()*13, life:1,
+      vx:Math.cos(a)*s, vy:Math.sin(a)*s,
+    });
+  }
+}
+
+/* ================================================================
+   HIT & DAMAGE
+================================================================ */
+function hitMonster(m) {
+  m.flash = 1; m.hp--;
+  explode(m.x, m.y, m.size);
+  G.score += G.wave * m.maxHp;
+  hsVal.textContent = G.score.toLocaleString();
+  if (m.hp <= 0) {
+    m.dead = true;
+    G.score += G.wave * m.maxHp * 4; // kill bonus
+    hsVal.textContent = G.score.toLocaleString();
+    onMonsterRemoved();
+  } else {
+    m.wi++;
+  }
+}
+
+function hurtPlayer(dmg = 1) {
+  G.playerHP = Math.max(0, G.playerHP - dmg);
+  refreshLives();
+  plEmoji.style.transform = 'scale(1.5) rotate(-15deg)';
+  setTimeout(() => plEmoji.style.transform = '', 220);
+  if (G.playerHP <= 0) endGame();
+}
+
+/* ================================================================
+   GAME LOOP
+================================================================ */
+function loop(ts) {
+  if (G.phase !== 'play') return;
+  const dt = Math.min((ts - G.last) / 1000, 0.08);
+  G.last = ts;
+  resizeCv();
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  tickMonsters(dt);
+  tickProjs(dt);
+  tickParts(dt);
+  drawMonsters();
+  drawProjs();
+  drawParts();
+  requestAnimationFrame(loop);
+}
+
+function playerAreaH() { return paEl ? paEl.offsetHeight + 10 : 90; }
+
+/* ================================================================
+   MONSTER TICK
+================================================================ */
+function tickMonsters(dt) {
+  const px = G.W / 2;
+  // Hitbox target: center of the player emoji
+  // pl-emoji is 5rem, so roughly 80px. It sits above inp-wrap.
+  const paH  = playerAreaH();
+  const emojiCenterY = G.vH - paH + 10; // approx center of emoji
+  const py   = emojiCenterY;
+  const hitR = 38; // tight hitbox around emoji center
+
+  for (const m of G.monsters) {
+    if (m.dead) continue;
+
+    // Walking animation: wobble x + breathe scale (slow and gentle)
+    m.wob += dt * 1.2;
+    m.scl += dt * 0.35 * m.sclDir;
+    if (m.scl > 1.025) m.sclDir = -1;
+    if (m.scl < 0.975) m.sclDir =  1;
+
+    // Tracking threshold: start homing at 30% of visible height
+    if (!m.tracking && m.y > G.vH * 0.3) m.tracking = true;
+
+    if (m.tracking) {
+      const dx = px - m.x, dy = py - m.y;
+      const d  = Math.hypot(dx, dy) || 1;
+      m.x += (dx/d) * m.spd * dt;
+      m.y += (dy/d) * m.spd * dt;
+    } else {
+      m.y += m.spd * dt;
+    }
+
+    if (m.flash > 0) m.flash -= dt * 5;
+
+    // Collision with player emoji (tight hitbox)
+    if (Math.hypot(m.x - px, m.y - py) < hitR + m.size * 0.22) {
+      explode(m.x, m.y, m.size);
+      m.dead = true;
+      hurtPlayer(m.maxHp); // damage = monster's total HP
+      onMonsterRemoved();
+    }
+  }
+  G.monsters = G.monsters.filter(m => !m.dead);
+}
+
+/* ================================================================
+   PROJECTILE TICK
+================================================================ */
+function tickProjs(dt) {
+  const PROJ_SPD = 520;
+  for (const p of G.projs) {
+    // Home toward target
+    const t = G.monsters.find(m => m.id === p.tid && !m.dead);
+    if (!t) { p.dead = true; continue; }
+    // Steer toward current target position
+    const dx = t.x - p.x, dy = t.y - p.y;
+    const d  = Math.hypot(dx, dy) || 1;
+    p.vx = (dx/d) * PROJ_SPD;
+    p.vy = (dy/d) * PROJ_SPD;
+    p.x += p.vx * dt; p.y += p.vy * dt; p.rot += p.rs * dt;
+    if (Math.hypot(p.x - t.x, p.y - t.y) < t.size * 0.4 + 8) {
+      hitMonster(t); p.dead = true;
+    }
+    if (p.x<-100||p.x>G.W+100||p.y<-200||p.y>G.vH+100) p.dead = true;
+  }
+  G.projs = G.projs.filter(p => !p.dead);
+}
+
+/* ================================================================
+   PARTICLE TICK
+================================================================ */
+function tickParts(dt) {
+  for (const p of G.parts) {
+    p.life -= dt * 2.2;
+    p.y += (p.vy||0)*dt; if(p.vy) p.vy*=0.93;
+    p.x += (p.vx||0)*dt; if(p.vx) p.vx*=0.90;
+  }
+  G.parts = G.parts.filter(p => p.life > 0);
+}
+
+/* ================================================================
+   DRAW — words rendered at highest z via canvas save/restore trick:
+   draw monster body first, then draw all word labels in a second pass
+   on top of everything (still under HUD which is DOM)
+================================================================ */
+function drawMonsters() {
+  // Pass 1: bodies (lower z)
+  for (const m of G.monsters) {
+    if (m.dead) continue;
+    ctx.save();
+    ctx.translate(m.x, m.y);
+    ctx.translate(Math.sin(m.wob) * 3, 0);
+    ctx.scale(m.scl, m.scl);
+    if (m.flash > 0) ctx.filter = `brightness(${1 + m.flash * 2.5})`;
+    ctx.font = `${m.size}px serif`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(m.emoji, 0, 0);
+    ctx.filter = 'none';
+
+    // Hearts (above emoji)
+    const heartSz = Math.max(8, 13 - m.maxHp * 0.5);
+    ctx.font = `${heartSz}px serif`;
+    const heartY = -(m.size * 0.6 + 14);
+    const hearts = Array.from({length:m.maxHp},(_,i)=>i<m.hp?'❤️':'🖤').join('');
+    ctx.textBaseline = 'middle';
+    ctx.fillText(hearts, 0, heartY);
+    ctx.restore();
+  }
+
+  // Pass 2: word labels — drawn on top of all sprites
+  // High z by drawing last in this function
+  for (const m of G.monsters) {
+    if (m.dead) continue;
+    ctx.save();
+    ctx.translate(m.x, m.y);
+
+    const heartSz = Math.max(8, 13 - m.maxHp * 0.5);
+    const heartY  = -(m.size * 0.6 + 14);
+    const wordY   = heartY - heartSz - 7;
+    const wordSz  = Math.max(11, 16 - (m.word?.length || 0) * 0.2);
+
+    ctx.font      = `bold ${wordSz}px "Noto Sans KR", sans-serif`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.strokeStyle = 'rgba(0,0,0,.98)';
+    ctx.lineWidth   = 4;
+    ctx.fillStyle   = m.type === 'boss' ? '#ffd700' : '#fff';
+
+    if (m.word) {
+      // Draw below monster instead of above
+      const belowY = m.size * 0.6 + 18;
+      ctx.strokeText(m.word, 0, belowY);
+      ctx.fillText  (m.word, 0, belowY);
+    }
+    ctx.restore();
+  }
+}
+
+function drawProjs() {
+  for (const p of G.projs) {
+    ctx.save();
+    ctx.translate(p.x, p.y);
+    ctx.rotate(p.rot);
+    ctx.font = `${p.size}px serif`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(p.emoji, 0, 0);
+    ctx.restore();
+  }
+}
+
+function drawParts() {
+  for (const p of G.parts) {
+    ctx.save();
+    ctx.globalAlpha = Math.max(0, p.life);
+    ctx.font = `${p.size}px serif`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(p.emoji, p.x, p.y);
+    ctx.restore();
+  }
+}
+
+/* ================================================================
+   TYPING INPUT
+================================================================ */
+typing.addEventListener('keydown', e => {
+  if (e.key !== 'Enter') return;
+  e.preventDefault();
+  const val = typing.value.trim();
+  typing.value = '';
+  if (!val) return;
+
+  // Find closest (highest y) matching monster
+  let best = null, bestY = -Infinity;
+  for (const m of G.monsters) {
+    if (!m.dead && m.word === val && m.y > bestY) {
+      bestY = m.y; best = m;
+    }
+  }
+  if (best) {
+    fire(best);
+  } else {
+    typing.style.color = '#ff4466';
+    setTimeout(() => typing.style.color = '', 280);
+  }
+});
+
+/* ================================================================
+   WAVE MANAGEMENT
+================================================================ */
+function startWave(wn) {
+  G.wave    = wn;
+  G.wPhase  = 'announce';
+  G.monsters = []; G.projs = [];
+  G.wTemplates = [];
+
+  const tmpls = genWave(wn);
+  hwNum.textContent = wn;
+  const nb = Math.ceil(wn/10)*10;
+  hwBoss.textContent = wn%10===0
+    ? 'BOSS WAVE!'
+    : `Boss in ${nb-wn}`;
+  ringArc.setAttribute('stroke-dasharray', '0 100');
+  setBG(wn);
+
+  const msg = wn%10===0
+    ? `🐉 Wave ${wn}\nBOSS!`
+    : `화이팅!\nWave ${wn}`;
+  announce(msg, () => {
+    G.wPhase = 'spawning';
+    initWaveSpawner(tmpls);
+  });
+}
+
+function waveComplete() {
+  if (G.wPhase === 'wdone') return;
+  G.wPhase = 'wdone';
+  showConfetti();
+  setTimeout(() => startWave(G.wave + 1), 3600);
+}
+
+function announce(msg, cb) {
+  annTxt.innerHTML = msg.replace('\n', '<br>');
+  annTxt.classList.add('on');
+  setTimeout(() => {
+    annTxt.classList.remove('on');
+    setTimeout(cb, 380);
+  }, 2100);
+}
+
+function setBG(wn) {
+  const idx = Math.min(Math.floor((wn-1)/10), BGS.length-1);
+  const [t, b] = BGS[idx];
+  document.documentElement.style.setProperty('--bg-top', t);
+  document.documentElement.style.setProperty('--bg-bot', b);
+  document.body.style.background = `linear-gradient(180deg,${t} 0%,${b} 100%)`;
+}
+
+/* ================================================================
+   CONFETTI
+================================================================ */
+function showConfetti() {
+  cfxEl.querySelectorAll('.cp').forEach(e => e.remove());
+  const cols = ['#ff4466','#ffd700','#4caf50','#2196f3','#9c27b0','#ff9800','#00bcd4','#ff6b9d'];
+  for (let i = 0; i < 100; i++) {
+    const p = document.createElement('div');
+    p.className = 'cp';
+    p.style.cssText = `left:${Math.random()*100}%;background:${cols[i%cols.length]};
+      width:${6+Math.random()*7}px;height:${10+Math.random()*12}px;
+      animation-duration:${1.4+Math.random()*2}s;
+      animation-delay:${Math.random()*0.6}s;transform-origin:center;`;
+    cfxEl.appendChild(p);
+  }
+  wellDone.classList.add('on');
+  setTimeout(() => wellDone.classList.remove('on'), 2600);
+}
+
+/* ================================================================
+   PLAYER HUD
+================================================================ */
+function refreshLives() {
+  plEmoji.textContent = G.hero;
+  const h = Array.from({length:G.playerMax},(_,i)=>i<G.playerHP?'❤️':'🖤').join('');
+  plLives.textContent = h;
+}
+
+/* ================================================================
+   CANVAS RESIZE
+================================================================ */
+function resizeCv() {
+  if (canvas.width!==G.W||canvas.height!==G.vH) {
+    canvas.width=G.W; canvas.height=G.vH;
+  }
+}
+
+/* ================================================================
+   START / RESET / END
+================================================================ */
+function startGame() {
+  const lv = parseInt(document.getElementById('inp-lives').value)||5;
+  G.playerMax = Math.min(100, Math.max(1, lv));
+  G.playerHP  = G.playerMax;
+  G.hero      = computeHeroEmoji();
+  G.score     = 0;
+  G.phase     = 'play';
+  G.W  = window.innerWidth;
+  G.H  = G.vH = window.innerHeight;
+  G.isMob = G.W < 600;
+
+  scrTitle.classList.add('off');
+  hudEl.style.display = 'flex';
+  paEl.style.display  = 'flex';
+
+  hsVal.textContent = '0';
+  hsBest.textContent = G.hiScore.toLocaleString();
+  resizeCv();
+  refreshLives();
+  rollNextSpell();
+  typing.focus();
+
+  G.last = performance.now();
+  requestAnimationFrame(ts => { G.last=ts; requestAnimationFrame(loop); });
+  startWave(1);
+}
+
+function resetState() {
+  G.phase = 'title';
+  G.monsters=[]; G.projs=[]; G.parts=[];
+  G.wTemplates=[];
+  hudEl.style.display='none';
+  paEl.style.display='none';
+  setBG(1);
+}
+
+function endGame() {
+  G.phase = 'over';
+
+  // High score
+  const isNew = G.score > G.hiScore && G.wave >= 3;
+  if (G.score > G.hiScore) {
+    G.hiScore = G.score;
+    localStorage.setItem('kth_hi', G.hiScore);
+    hsBest.textContent = G.hiScore.toLocaleString();
+  }
+
+  const goTitle = document.getElementById('go-title');
+  const goDetail = document.getElementById('go-detail');
+  const goHi = document.getElementById('go-hiscore');
+
+  if (isNew) {
+    goTitle.textContent = '🏅 New Record!';
+    showConfetti();
+  } else {
+    goTitle.textContent = '🪦 게임 오버';
+  }
+  goDetail.textContent = `Wave ${G.wave}  •  Score: ${G.score.toLocaleString()}`;
+  goHi.textContent     = `Best: ${G.hiScore.toLocaleString()}`;
+
+  scrOver.classList.remove('off');
+  hudEl.style.display='none';
+  paEl.style.display='none';
+}
+
+/* ================================================================
+   RESIZE GUARD
+================================================================ */
+let _initW=window.innerWidth, _rzt;
+window.addEventListener('resize', () => {
+  clearTimeout(_rzt);
+  _rzt = setTimeout(() => {
+    const nw = window.innerWidth;
+    if (G.phase==='play' && Math.abs(nw-_initW)>60) {
+      // treat as game over but show different message
+      G.phase='over';
+      const goTitle=document.getElementById('go-title');
+      goTitle.textContent='🪦 Window Resized';
+      document.getElementById('go-detail').textContent=
+        `Window was resized. Wave ${G.wave}  •  Score: ${G.score.toLocaleString()}`;
+      document.getElementById('go-hiscore').textContent=`Best: ${G.hiScore.toLocaleString()}`;
+      scrOver.classList.remove('off');
+      hudEl.style.display='none'; paEl.style.display='none';
+    }
+    _initW=nw;
+  }, 280);
+});
+
+/* ================================================================
+   VISUAL VIEWPORT — mobile keyboard
+================================================================ */
+if ('visualViewport' in window) {
+  window.visualViewport.addEventListener('resize', () => {
+    if (G.phase!=='play') return;
+    const vvh = window.visualViewport.height;
+    G.vH = vvh;
+    canvas.height = vvh;
+    const kb = window.innerHeight - vvh;
+    paEl.style.bottom = Math.max(0,kb)+'px';
+    const ratio = vvh / G.H;
+    for (const m of G.monsters) m.spd = m.spd * ratio;
+  });
+}
+
+/* ================================================================
+   KEEP FOCUS
+================================================================ */
+document.addEventListener('pointerdown', e => {
+  if (G.phase === 'play') typing.focus();
+});
+
+/* ================================================================
+   INIT
+================================================================ */
+resizeCv();
+setBG(1);
+</script>
+</body>
+</html>

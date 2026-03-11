@@ -7,48 +7,10 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700&family=Cormorant:wght@400;500;600&display=swap" rel="stylesheet">
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>한</text></svg>">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>R</text></svg>">
+    <link rel="stylesheet" href="../assets/config.css">
+    <link rel="stylesheet" href="../assets/shared.css">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .container {
-            background: white;
-            border-radius: 20px;
-            padding: 40px;
-            max-width: 700px;
-            width: 100%;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-        }
-
-        h1 {
-            text-align: center;
-            color: #667eea;
-            margin-bottom: 10px;
-            font-size: 28px;
-        }
-
-        .subtitle {
-            text-align: center;
-            color: #666;
-            margin-bottom: 30px;
-            font-size: 14px;
-        }
-
         .input-display {
             background: linear-gradient(135deg, #f5e6d3 0%, #ede0ce 100%);
             border-radius: 15px;
@@ -253,6 +215,7 @@
 </head>
 <body>
     <div class="container">
+        <button class="close-btn" onclick="window.location.href='../index.html'"></button>
         <h1>🇰🇷 Hangul Romanization</h1>
         <p class="subtitle">Convert Korean Hangul to Romanized text</p>
 
@@ -267,7 +230,7 @@
 
         <div class="convert-button-wrapper">
             <button class="btn-convert" id="convertBtn">
-                ⇄ Convert to Romanization
+                ⇄ Romanize
             </button>
         </div>
 
@@ -284,7 +247,7 @@
             <label class="control-label" for="conversionMethod">Conversion Method</label>
             <select id="conversionMethod">
                 <option value="mccune" selected>McCune-Reischauer</option>
-                <option value="revised">Revised-like</option>
+                <option value="revised">Revised Romanization-like</option>
                 <option value="wiri">Wiri-MR</option>
                 <option value="custom">Custom</option>
             </select>
@@ -305,11 +268,11 @@
     </div>
 
     <div class="footer">
-        <a href="index.html">🇰🇷 한국말 공부</a>ㅤ•ㅤBuilt with care by <a href="https://github.com/lluckymou" target="_blank">llucmou 🌲</a>
+        <a href="../index.html">🇰🇷 한국말 공부</a>ㅤ•ㅤBuilt with care by <a href="https://github.com/lluckymou" target="_blank">llucmou 🌲</a>
     </div>
 
-    <script src="hangul.js"></script>
-    <script src="script.js"></script>
+    <script src="../assets/hangul.js"></script>
+    <script src="../assets/romanizer.js"></script>
 
     <script>
         const conversionMethodSelect = document.getElementById('conversionMethod');

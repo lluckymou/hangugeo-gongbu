@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hangeul Writer</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@400;700;800&display=swap" rel="stylesheet">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>한</text></svg>">
+    <link rel="stylesheet" href="../assets/config.css">
+    <link rel="stylesheet" href="../assets/shared.css">
+    <style>
+        .input-display {
+            background: linear-gradient(135deg, #f5e6d3 0%, #ede0ce 100%);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 20px;
+            min-height: 120px;
+            box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .latin-input {
+            width: 100%;
+            background: transparent;
+            border: none;
+            outline: none;
+            font-size: 24px;
+            color: #4a4a4a;
+            font-family: 'Nanum Gothic', sans-serif;
+            text-align: left;
+            resize: none;
+            line-height: 1.6;
+            min-height: 80px;
+        }
+
+        .latin-input::placeholder {
+            color: #8b7d6b;
+            opacity: 0.6;
+        }
+
+        .output-display {
+            background: var(--white);
+            border: 2px solid var(--medium-gray);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 25px;
+            min-height: 120px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .hangeul-output {
+            width: 100%;
+            background: transparent;
+            border: none;
+            outline: none;
+            font-size: 32px;
+            color: var(--text-color);
+            font-family: 'Nanum Gothic', sans-serif;
+            text-align: left;
+            resize: none;
+            line-height: 1.6;
+            min-height: 80px;
+        }
+
+        .hangeul-output::placeholder {
+            color: #a0aec0;
+            opacity: 0.7;
+        }
+
+        .info-box {
+            background: var(--light-gray);
+            border-left: 4px solid var(--primary-color);
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 20px;
+            font-size: 14px;
+            color: #555;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <button class="close-btn" onclick="window.location.href='../index.html'"></button>
+        <h1>한 Hangeul Writer</h1>
+        <p class="subtitle">Write in Latin script and see it converted to Hangul</p>
+
+        <div class="input-display">
+            <textarea 
+                class="latin-input" 
+                id="latinInput" 
+                placeholder="Type in Latin script (e.g., annyeonghaseyo)..."
+                rows="3"
+            >WORK IN PROGRESS - DO NOT USE</textarea>
+        </div>
+
+        <div class="output-display">
+            <textarea 
+                class="hangeul-output" 
+                id="hangeulOutput" 
+                placeholder="Hangul will appear here..."
+                rows="3"
+                readonly
+            ></textarea>
+        </div>
+
+        <div class="info-box">
+            💡 <strong>Tip:</strong> Type Korean words in Romanized form (like "hanguk" for 한국) and watch them convert to Hangul in real-time!
+        </div>
+    </div>
+
+    <div class="footer">
+        <a href="../index.html">🇰🇷 한국말 공부</a>ㅤ•ㅤBuilt with care by <a href="https://github.com/lluckymou" target="_blank">llucmou 🌲</a>
+    </div>
+
+    <script src="../assets/hangul.js"></script>
+    <script>
+        const latinInput = document.getElementById('latinInput');
+        const hangeulOutput = document.getElementById('hangeulOutput');
+
+        // Korean romanization to Hangul mapping
+        const romanToHangulMap = {
+            // Vowels
+            'a': 'ㅏ', 'ae': 'ㅐ', 'ya': 'ㅑ', 'yae': 'ㅒ',
+            'eo': 'ㅓ', 'e': 'ㅔ', 'yeo': 'ㅕ', 'ye': 'ㅖ',
+            'o': 'ㅗ', 'wa': 'ㅘ', 'wae': 'ㅙ', 'oe': 'ㅚ',
+            'yo': 'ㅛ', 'u': 'ㅜ', 'wo': 'ㅝ', 'we': 'ㅞ',
+            'wi': 'ㅟ', 'yu': 'ㅠ', 'eu': 'ㅡ', 'ui': 'ㅢ',
+            'i': 'ㅣ',
+            
+            // Consonants
+            'g': 'ㄱ', 'kk': 'ㄲ', 'k': 'ㅋ',
+            'd': 'ㄷ', 'tt': 'ㄸ', 't': 'ㅌ',
+            'b': 'ㅂ', 'pp': 'ㅃ', 'p': 'ㅍ',
+            'j': 'ㅈ', 'jj': 'ㅉ', 'ch': 'ㅊ',
+            's': 'ㅅ', 'ss': 'ㅆ',
+            'h': 'ㅎ', 'r': 'ㄹ', 'l': 'ㄹ',
+            'm': 'ㅁ', 'n': 'ㄴ', 'ng': 'ㅇ'
+        };
+
+        // Common Korean syllables for better conversion
+        const syllableMap = {
+            'ga': '가', 'gae': '개', 'gya': '갸', 'gyae': '걔',
+            'geo': '거', 'ge': '게', 'gyeo': '겨', 'gye': '계',
+            'go': '고', 'gwa': '과', 'gwae': '괘', 'goe': '괴',
+            'gyo': '교', 'gu': '구', 'gwo': '궈', 'gwe': '궤',
+            'gwi': '귀', 'gyu': '규', 'geu': '그', 'geui': '긔',
+            'gi': '기',
+            
+            'na': '나', 'nae': '내', 'nya': '냐', 'nyae': '냬',
+            'neo': '너', 'ne': '네', 'nyeo': '녀', 'nye': '녜',
+            'no': '노', 'nwa': '놔', 'nwae': '놰', 'noe': '뇌',
+            'nyo': '뇨', 'nu': '누', 'nwo': '눠', 'nwe': '눼',
+            'nwi': '뉘', 'nyu': '뉴', 'neu': '느', 'neui': '늬',
+            'ni': '니',
+            
+            'da': '다', 'dae': '대', 'dya': '댜', 'dyae': '댸',
+            'deo': '더', 'de': '데', 'dyeo': '뎌', 'dye': '뎨',
+            'do': '도', 'dwa': '돠', 'dwae': '돼', 'doe': '되',
+            'dyo': '됴', 'du': '두', 'dwo': '둬', 'dwe': '뒈',
+            'dwi': '뒤', 'dyu': '듀', 'deu': '드', 'deui': '드',
+            'di': '디',
+            
+            'ra': '라', 'rae': '래', 'rya': '랴', 'ryae': '럐',
+            'reo': '러', 're': '레', 'ryeo': '려', 'rye': '례',
+            'ro': '로', 'rwa': '롸', 'rwae': '뢔', 'roe': '뢰',
+            'ryo': '료', 'ru': '루', 'rwo': '뤄', 'rwe': '뤠',
+            'rwi': '뤼', 'ryu': '류', 'reu': '르', 'reui': '르',
+            'ri': '리',
+            
+            'ma': '마', 'mae': '매', 'mya': '먀', 'myae': '먜',
+            'meo': '머', 'me': '메', 'myeo': '며', 'mye': '몌',
+            'mo': '모', 'mwa': '뫄', 'mwae': '뫠', 'moe': '뫼',
+            'myo': '묘', 'mu': '무', 'mwo': '뭐', 'mwe': '뭬',
+            'mwi': '뮈', 'myu': '뮤', 'meu': '므', 'meui': '믜',
+            'mi': '미',
+            
+            'ba': '바', 'bae': '배', 'bya': '뱌', 'byae': '뱨',
+            'beo': '버', 'be': '베', 'byeo': '벼', 'bye': '볘',
+            'bo': '보', 'bwa': '봐', 'bwae': '봬', 'boe': '뵈',
+            'byo': '뵤', 'bu': '부', 'bwo': '붜', 'bwe': '붸',
+            'bwi': '뷔', 'byu': '뷰', 'beu': '브', 'beui': '브',
+            'bi': '비',
+            
+            'sa': '사', 'sae': '새', 'sya': '샤', 'syae': '섀',
+            'seo': '서', 'se': '세', 'syeo': '셔', 'sye': '셰',
+            'so': '소', 'swa': '솨', 'swae': '쇄', 'soe': '쇠',
+            'syo': '쇼', 'su': '수', 'swo': '숴', 'swe': '쉐',
+            'swi': '쉬', 'syu': '슈', 'seu': '스', 'seui': '스',
+            'si': '시',
+            
+            'a': '아', 'ae': '애', 'ya': '야', 'yae': '얘',
+            'eo': '어', 'e': '에', 'yeo': '여', 'ye': '예',
+            'o': '오', 'wa': '와', 'wae': '왜', 'oe': '외',
+            'yo': '요', 'u': '우', 'wo': '워', 'we': '웨',
+            'wi': '위', 'yu': '유', 'eu': '으', 'ui': '의',
+            'i': '이',
+            
+            'ja': '자', 'jae': '재', 'jya': '쟈', 'jyae': '쟤',
+            'jeo': '저', 'je': '제', 'jyeo': '져', 'jye': '졔',
+            'jo': '조', 'jwa': '좌', 'jwae': '좨', 'joe': '죄',
+            'jyo': '죠', 'ju': '주', 'jwo': '줘', 'jwe': '줴',
+            'jwi': '쥐', 'jyu': '쥬', 'jeu': '즈', 'jeui': '즈',
+            'ji': '지',
+            
+            'cha': '차', 'chae': '채', 'chya': '챠', 'chyae': '챼',
+            'cheo': '처', 'che': '체', 'chyeo': '쳐', 'chye': '쳬',
+            'cho': '초', 'chwa': '촤', 'chwae': '쵀', 'choe': '최',
+            'chyo': '쵸', 'chu': '추', 'chwo': '춰', 'chwe': '췌',
+            'chwi': '취', 'chyu': '츄', 'cheu': '츠', 'cheui': '츠',
+            'chi': '치',
+            
+            'ka': '카', 'kae': '캐', 'kya': '캬', 'kyae': '컈',
+            'keo': '커', 'ke': '케', 'kyeo': '켜', 'kye': '켸',
+            'ko': '코', 'kwa': '콰', 'kwae': '쾌', 'koe': '쾨',
+            'kyo': '쿄', 'ku': '쿠', 'kwo': '쿼', 'kwe': '퀘',
+            'kwi': '퀴', 'kyu': '큐', 'keu': '크', 'keui': '크',
+            'ki': '키',
+            
+            'ta': '타', 'tae': '태', 'tya': '탸', 'tyae': '턔',
+            'teo': '터', 'te': '테', 'tyeo': '텨', 'tye': '톄',
+            'to': '토', 'twa': '톼', 'twae': '퇘', 'toe': '퇴',
+            'tyo': '툐', 'tu': '투', 'two': '퉈', 'twe': '퉤',
+            'twi': '튀', 'tyu': '튜', 'teu': '트', 'teui': '트',
+            'ti': '티',
+            
+            'pa': '파', 'pae': '패', 'pya': '퍄', 'pyae': '퍠',
+            'peo': '퍼', 'pe': '페', 'pyeo': '펴', 'pye': '폐',
+            'po': '포', 'pwa': '퐈', 'pwae': '퐤', 'poe': '푀',
+            'pyo': '표', 'pu': '푸', 'pwo': '풔', 'pwe': '풰',
+            'pwi': '퓌', 'pyu': '퓨', 'peu': '프', 'peui': '프',
+            'pi': '피',
+            
+            'ha': '하', 'hae': '해', 'hya': '햐', 'hyae': '햬',
+            'heo': '허', 'he': '헤', 'hyeo': '혀', 'hye': '혜',
+            'ho': '호', 'hwa': '화', 'hwae': '홰', 'hoe': '회',
+            'hyo': '효', 'hu': '후', 'hwo': '훠', 'hwe': '훼',
+            'hwi': '휘', 'hyu': '휴', 'heu': '흐', 'heui': '흐',
+            'hi': '히'
+        };
+
+        function romanToHangul(roman) {
+            if (!roman) return '';
+            
+            roman = roman.toLowerCase();
+            let result = '';
+            let i = 0;
+            
+            while (i < roman.length) {
+                let found = false;
+                
+                // Try 3-letter syllables first
+                if (i + 2 < roman.length) {
+                    const three = roman.substr(i, 3);
+                    if (syllableMap[three]) {
+                        result += syllableMap[three];
+                        i += 3;
+                        found = true;
+                    }
+                }
+                
+                // Try 2-letter syllables
+                if (!found && i + 1 < roman.length) {
+                    const two = roman.substr(i, 2);
+                    if (syllableMap[two]) {
+                        result += syllableMap[two];
+                        i += 2;
+                        found = true;
+                    }
+                }
+                
+                // Try single letters
+                if (!found) {
+                    const one = roman[i];
+                    if (syllableMap[one]) {
+                        result += syllableMap[one];
+                        i += 1;
+                        found = true;
+                    } else if (romanToHangulMap[one]) {
+                        result += romanToHangulMap[one];
+                        i += 1;
+                        found = true;
+                    } else {
+                        result += one;
+                        i += 1;
+                    }
+                }
+            }
+            
+            return result;
+        }
+
+        latinInput.addEventListener('input', function() {
+            const roman = this.value;
+            const hangul = romanToHangul(roman);
+            hangeulOutput.value = hangul;
+            autoResize(hangeulOutput);
+        });
+
+        function autoResize(textarea) {
+            textarea.style.height = 'auto';
+            textarea.style.height = textarea.scrollHeight + 'px';
+        }
+
+        latinInput.addEventListener('input', function() {
+            autoResize(this);
+        });
+    </script>
+</body>
+</html>
