@@ -111,7 +111,7 @@ body{
 .epicker::-webkit-scrollbar{ width:4px; }
 .epicker::-webkit-scrollbar-thumb{ background:rgba(0,0,0,.15); border-radius:2px; }
 .eopt{
-  font-size:1.35rem; cursor:pointer;
+  font-size:2rem; cursor:pointer;
   padding:3px 4px; border-radius:8px;
   transition:transform .13s,background .13s;
   border:2px solid transparent;
@@ -127,6 +127,10 @@ body{
   align-items:center;
 }
 .skin-row label{ font-size:.65rem; color:#848484; margin-right:4px; }
+/* Each group (skin or gender) wraps as a unit */
+.skin-group{
+  display:flex; align-items:center; gap:4px; flex-wrap:nowrap;
+}
 .skin-btn{
   font-size:1.1rem; cursor:pointer;
   padding:2px 4px; border-radius:6px;
@@ -136,8 +140,8 @@ body{
 .skin-btn:hover{ background:rgba(0,0,0,.06); }
 .skin-btn.sel{ border-color:#667eea; background:rgba(102,126,234,.1); }
 .gender-btn{
-  font-size:.72rem; cursor:pointer;
-  padding:3px 8px; border-radius:6px;
+  font-size:1.1rem; cursor:pointer;
+  padding:2px 6px; border-radius:6px;
   border:1px solid #ddd; background:none;
   color:#555; transition:all .12s;
 }
@@ -366,7 +370,56 @@ body{
 }
 #announce-txt.on{ opacity:1; }
 
-/* ===== CONFETTI ===== */
+/* ===== FREEZE OVERLAY ===== */
+#freeze-overlay{
+  position:fixed; inset:0; z-index:70;
+  background:rgba(100,180,255,0.28);
+  pointer-events:none; opacity:0;
+  transition:opacity .15s;
+}
+#freeze-overlay.on{ opacity:1; }
+
+/* ===== WEATHER CANVAS ===== */
+#wx-canvas{ position:fixed; inset:0; pointer-events:none; z-index:52; opacity:0.72; }
+
+/* ===== CHEAT MENU ===== */
+#cheat-menu{
+  position:fixed; z-index:999;
+  background:#1a1a2e; color:#e0e0ff;
+  border:1px solid #667eea; border-radius:14px;
+  padding:16px 18px; width:280px;
+  box-shadow:0 8px 32px rgba(0,0,0,.7);
+  font-family:'Noto Sans KR',sans-serif; font-size:.82rem;
+  display:none; top:80px; left:20px;
+  cursor:default; user-select:none;
+}
+#cheat-menu.on{ display:block; }
+#cheat-title{
+  font-size:1rem; font-weight:bold; color:#aab8ff;
+  margin-bottom:12px; display:flex; justify-content:space-between; align-items:center;
+}
+#cheat-close{ cursor:pointer; opacity:.6; font-size:1.2rem; line-height:1; }
+#cheat-close:hover{ opacity:1; }
+.cheat-row{
+  display:flex; align-items:center; gap:8px;
+  margin-bottom:8px; flex-wrap:wrap;
+}
+.cheat-row label{ flex:1; min-width:80px; }
+.cheat-btn{
+  background:#667eea; color:#fff; border:none;
+  border-radius:6px; padding:4px 10px; cursor:pointer;
+  font-size:.78rem;
+}
+.cheat-btn:hover{ background:#8899ff; }
+.cheat-btn.red{ background:#e74c3c; }
+.cheat-btn.red:hover{ background:#ff6666; }
+.cheat-inp{
+  width:54px; background:#2a2a4e; color:#fff;
+  border:1px solid #667eea; border-radius:5px;
+  padding:3px 6px; font-size:.78rem;
+}
+#cheat-god-lbl{ color:#ffd700; font-weight:bold; font-size:.75rem; }
+
 #cfx{ position:fixed; inset:0; pointer-events:none; z-index:55; overflow:hidden; }
 .cp{
   position:absolute; top:-18px; border-radius:2px;
@@ -400,11 +453,14 @@ body{
         <h3>Choose your hero</h3>
         <div class="epicker" id="hero-pick"></div>
         <div class="skin-row" id="skin-row" style="display:none">
-          <label>Skin:</label>
-          <div id="skin-btns"></div>
-          &nbsp;
-          <label>Gender:</label>
-          <div id="gender-btns"></div>
+          <div class="skin-group">
+            <label>Skin:</label>
+            <div id="skin-btns"></div>
+          </div>
+          <div class="skin-group">
+            <label>Gender:</label>
+            <div id="gender-btns"></div>
+          </div>
         </div>
       </div>
 
@@ -465,6 +521,7 @@ body{
           <circle id="ring-arc" cx="18" cy="18" r="15.9" fill="none" stroke="#4caf50" stroke-width="3"
             stroke-dasharray="0 100" stroke-linecap="round"
             transform="rotate(-90 18 18)" style="transition:stroke-dasharray .3s ease"/>
+          <text id="weather-icon" x="18" y="22" text-anchor="middle" font-size="11" style="pointer-events:none;font-family:serif">🌞</text>
         </svg>
       </div>
       <div class="wave-text">
@@ -503,6 +560,111 @@ body{
 <!-- ANNOUNCE / CONFETTI -->
 <div id="announce"><div id="announce-txt"></div></div>
 <div id="cfx"><div id="well-done">잘했어요! 🎉</div></div>
+
+<!-- WEATHER -->
+<canvas id="wx-canvas"></canvas>
+
+<!-- FREEZE -->
+<div id="freeze-overlay"></div>
+
+<!-- CHEAT MENU -->
+<div id="cheat-menu">
+  <div id="cheat-title">
+    ⚡ Cheat Menu
+    <span id="cheat-close">✕</span>
+  </div>
+  <div class="cheat-row">
+    <label>God Mode</label>
+    <button class="cheat-btn" id="c-god" onclick="cheatToggleGod()">OFF</button>
+    <span id="cheat-god-lbl"></span>
+  </div>
+  <div class="cheat-row">
+    <label>Auto-Shoot</label>
+    <button class="cheat-btn" id="c-auto" onclick="cheatToggleAuto()">OFF</button>
+  </div>
+  <div class="cheat-row">
+    <label>Add Lives</label>
+    <input class="cheat-inp" id="c-lives-in" type="number" value="10" min="1" max="100">
+    <button class="cheat-btn" onclick="cheatAddLives()">+Add</button>
+  </div>
+  <div class="cheat-row">
+    <label>Set Wave</label>
+    <input class="cheat-inp" id="c-wave-in" type="number" value="5" min="1">
+    <button class="cheat-btn" onclick="cheatSetWave()">Go</button>
+  </div>
+  <div class="cheat-row">
+    <label>Weather</label>
+    <select class="cheat-inp" id="c-wx" style="width:100px">
+      <option value="sunny">☀️ Sunny</option>
+      <option value="foggy">🌫️ Foggy</option>
+      <option value="drizzle">🌦 Drizzle</option>
+      <option value="raining">🌧 Rain</option>
+      <option value="snowing">🌨 Snow</option>
+      <option value="blizzard">❄️ Blizzard</option>
+      <option value="night">🌑 Night</option>
+      <option value="fall">🍁 Fall</option>
+      <option value="blossom">🌸 Blossom</option>
+    </select>
+    <button class="cheat-btn" onclick="cheatSetWeather()">Set</button>
+  </div>
+  <div class="cheat-row">
+    <label>Spawn Boss</label>
+    <select class="cheat-inp" id="c-boss-type" style="width:80px">
+      <option value="">Random</option>
+      <option value="eruptor">🌋 Eruptor</option>
+      <option value="king">🏯 King</option>
+      <option value="archer">🏹 Archer</option>
+      <option value="musician">🎵 Musician</option>
+      <option value="ice">❄️ Ice</option>
+      <option value="warrior">🛡 Warrior</option>
+    </select>
+    <button class="cheat-btn" onclick="cheatSpawnBoss()">Spawn</button>
+  </div>
+  <hr style="border-color:#333;margin:8px 0">
+  <div style="font-size:.72rem;color:#aab8ff;margin-bottom:6px">Custom Monster</div>
+  <div class="cheat-row">
+    <label>Emoji</label>
+    <select class="cheat-inp" id="c-mon-emoji" style="width:100px">
+      <option>💩</option><option>👹</option><option>👺</option><option>👻</option>
+      <option>👽</option><option>👾</option><option>🤖</option><option>🧌</option>
+      <option>🧟</option><option>🕷️</option><option>🦟</option><option>🦠</option>
+      <option>🪳</option><option>🐀</option><option>🐁</option><option>🎃</option>
+      <option>🦇</option><option>🦅</option><option>🥷🏼</option>
+    </select>
+  </div>
+  <div class="cheat-row">
+    <label>Words</label>
+    <input class="cheat-inp" id="c-mon-words" type="number" value="1" min="1" max="8">
+  </div>
+  <div class="cheat-row">
+    <label>Modifier</label>
+    <select class="cheat-inp" id="c-mon-mod" style="width:100px">
+      <option value="">Normal</option>
+      <option value="archer">🏹 Archer</option>
+      <option value="musician">🎵 Musician</option>
+      <option value="ice">❄️ Ice</option>
+      <option value="warrior">🛡 Warrior</option>
+      <option value="eruptor">🌋 Eruptor</option>
+      <option value="king">🏯 King</option>
+    </select>
+  </div>
+  <div class="cheat-row">
+    <button class="cheat-btn" style="width:100%" onclick="cheatSpawnCustom()">🐣 Spawn Custom</button>
+  </div>
+  <hr style="border-color:#333;margin:8px 0">
+  <div class="cheat-row">
+    <label>Score +1000</label>
+    <button class="cheat-btn" onclick="cheatAddScore()">+Score</button>
+  </div>
+  <div class="cheat-row">
+    <label>Skip Wave</label>
+    <button class="cheat-btn" onclick="cheatSkipWave()">⏭ Skip</button>
+  </div>
+  <div class="cheat-row">
+    <label>Kill All</label>
+    <button class="cheat-btn red" onclick="cheatKillAll()">💀 Kill All</button>
+  </div>
+</div>
 
 <script>
 /* ================================================================
@@ -584,7 +746,7 @@ const RAW = [
   "잘했어요","수고했어요","축하해요","화이팅","힘내세요","어떻게 지내세요",
   "천천히 말해주세요","다시 말해주세요","생일 축하해요","좋은 아침","좋은 밤",
   "소셜미디어","인터넷","프로그램","게임","데이터","앱","유튜브","인스타그램",
-  "서울특별시","인공지능","반도체","K-팝","드라마","올림픽","월드컵","환경오염","지구온난화",
+  "서울특별시","인공지능","반도체","케이팝","드라마","올림픽","월드컵","환경오염","지구온난화",
   "커뮤니케이션","디지털화","글로벌","인터내셔널","인프라스트럭처",
   "무슨 일이에요","어디에 가요","뭐 먹고 싶어요","같이 가요","잘 부탁드립니다",
 ];
@@ -604,10 +766,10 @@ const WORDS = RAW.map(t => ({ text: t, d: countJamo(t) }));
 /* ================================================================
    CONSTANTS
 ================================================================ */
-const MONSTERS = ['💩','👹','👺','👻','👽','👾','🤖','🧌','🧟','🧟‍♀️','🕷️','🦟','🦠','🪳','🐀'];
+const MONSTERS = ['💩','👹','👺','👻','👽','👾','🤖','🧌','🧟','🧟‍♀️','🕷️','🦟','🦠','🪳','🐀','🐁','🎃','🦇','🦅','🥷🏼'];
 
 const WEAPONS = {
-  magic:     { label: 'Magic',      e:['🔮','🪄','💫','🌀','⚡','🔥','❄️','🌪️','🪨','🧿','💠','🌙','🕯️','🪬','☄️','🪐']},
+  magic:     { label: 'Magic',      e:['🔮','🪄','💫','🌀','⚡','🔥','❄️','🌪️','🪨','🧿','💠','🌙','🕯️','☄️','🪐']},
   love:      { label: 'Love',       e:['💘','❤️','💥','💖','💗','💓','💞','💕','🩷','🧡','💛','💚','💙','💜','🩵','🤍','🖤'] },
   fairy:     { label: 'Fairy',      e:['🧚','🦄','🌈','✨','💫','🪄','🍄','🧁','🫧','🦋','🌸','🌟','🪩','🪞','🪅']},
   weapons:   { label: 'Weapons',    e:['🗡️','🪓','🔪','🏹','💣','🧨','⛏️','🪚','🔨','🛡️','🪃','🗡️']},
@@ -700,16 +862,16 @@ const HERO_DEFS = [
 ];
 
 const BGS = [
-  ['#c8c8d4','#9898a8'],
-  ['#ffd6e8','#ffb3cc'],
-  ['#c6eeff','#9bd4f5'],
-  ['#c6ffdb','#9bf5bc'],
-  ['#fffbc6','#fff3a0'],
-  ['#f0c6ff','#e09bf5'],
-  ['#ffc6c6','#f59b9b'],
-  ['#c6fff3','#9bf5e8'],
-  ['#ffe8c6','#ffd4a0'],
-  ['#e8c6ff','#d4a0f5'],
+  ['#c4c4cc','#a0a0aa'],  // neutral gray-blue (default)
+  ['#d4c8cc','#b8a8ae'],  // gray-rose
+  ['#c4ccd4','#a4b0ba'],  // gray-sky
+  ['#c4d0c8','#a4b4a8'],  // gray-green
+  ['#d0d0c4','#b8b8a4'],  // gray-yellow
+  ['#ccc4d0','#b0a8ba'],  // gray-purple
+  ['#d0c4c4','#b8a8a8'],  // gray-red
+  ['#c4d0cc','#a4b8b4'],  // gray-teal
+  ['#d0ccc4','#b8b4a8'],  // gray-amber
+  ['#ccc4d0','#b4a8b8'],  // gray-violet
 ];
 
 /* ================================================================
@@ -733,6 +895,13 @@ const G = {
   H: window.innerHeight,
   vH: window.innerHeight,
   isMob: window.innerWidth < 600,
+  // weather
+  weather: 'sunny', wxParticles: [],
+  wxFogOffset: 0,
+  wxNight: false,
+  // special flags
+  frozen: false, freezeTimer: 0,
+  godMode: false, autoShoot: false,
 };
 
 /* ================================================================
@@ -755,6 +924,11 @@ const ringArc  = document.getElementById('ring-arc');
 const annTxt   = document.getElementById('announce-txt');
 const wellDone = document.getElementById('well-done');
 const annEl    = document.getElementById('announce');
+const wxCanvas = document.getElementById('wx-canvas');
+const wxCtx    = wxCanvas.getContext('2d');
+const freezeEl = document.getElementById('freeze-overlay');
+const weatherIconEl = document.getElementById('weather-icon');
+const cheatMenu = document.getElementById('cheat-menu');
 
 // Keep announce messages centred within the *visible* viewport
 // (accounts for mobile software keyboard pushing the visual center down)
@@ -1117,22 +1291,49 @@ function monsterSpeed(words, isBoss, mob) {
    MONSTER FACTORY
 ================================================================ */
 let _id = 0;
+const SPECIAL_WIELD = {
+  archer: '🏹', musician: null, // musician uses random instrument
+  ice: '❄️', warrior: '🛡',
+};
+const SPECIAL_WIELD_COLOR = {
+  archer: '#4466bb', musician: '#ff99cc', ice: '#88ddff', warrior: '#bbbbbb',
+};
+
 function mkMonster(tmpl) {
   const mob  = G.W < 600;
-  const size = tmpl.type === 'boss' ? 82 : 32 + tmpl.hp * 14;
-  const spd  = monsterSpeed(tmpl.words, tmpl.type === 'boss', mob);
+  const isBoss = tmpl.type === 'boss';
+  const size = isBoss ? 82 : 32 + tmpl.hp * 14;
+  let spd  = monsterSpeed(tmpl.words, isBoss, mob);
+  if (tmpl.spdMult) spd *= tmpl.spdMult;
   const x    = 60 + Math.random() * (G.W - 120);
+
+  // Wield icon for special types
+  let wieldIcon = null;
+  if (tmpl.special === 'archer')   wieldIcon = '🏹';
+  if (tmpl.special === 'ice')      wieldIcon = '❄️';
+  if (tmpl.special === 'warrior')  wieldIcon = '🛡';
+  if (tmpl.special === 'musician') wieldIcon = INSTRUMENTS[Math.floor(Math.random() * INSTRUMENTS.length)];
+  if (tmpl.special === 'eruptor')  wieldIcon = '🌋';
+  if (tmpl.special === 'king')     wieldIcon = '🏯';
+
+  const labelColor = tmpl.special ? (SPECIAL_WIELD_COLOR[tmpl.special] || '#ffdd88') : null;
+
+  let emoji;
+  if (isBoss) emoji = tmpl.bossEmoji || '🐉';
+  else emoji = MONSTERS[Math.floor(Math.random() * MONSTERS.length)];
+
   return {
     id:    ++_id,
     type:  tmpl.type,
-    emoji: tmpl.type === 'boss' ? '🐉' : MONSTERS[Math.floor(Math.random()*MONSTERS.length)],
+    special: tmpl.special || null,
+    emoji, wieldIcon, labelColor,
     x, y: -(size + 20),
     hp: tmpl.hp, maxHp: tmpl.maxHp,
     words: [...tmpl.words], wi: 0,
     get word() { return this.words[this.wi] || this.words[0]; },
     size,
-    baseSpd: spd, // never mutate this
-    get spd() { return this.baseSpd * (G.vH / G.H); }, // live-scaled
+    baseSpd: spd,
+    get spd() { return this.baseSpd * (G.vH / G.H); },
     tracking: false, dead: false,
     flash: 0,
     wob: Math.random() * Math.PI * 2,
@@ -1214,8 +1415,9 @@ function fire(monster) {
     rot:0, rs:(Math.random()-.5)*18,
     size: 48,
     dead:false,
+    born: performance.now(), // for arc animation
   });
-  rollNextSpell(); // pre-roll the NEXT one immediately
+  rollNextSpell();
 }
 
 /* ================================================================
@@ -1238,26 +1440,657 @@ function explode(x, y, sz) {
    HIT & DAMAGE
 ================================================================ */
 function hitMonster(m) {
+  // Warrior shield blocks hit
+  if (m.special === 'warrior' && m.shielded) {
+    // Projectile just bounces off — no damage
+    return;
+  }
+  // King is invulnerable while waiting for ninjas
+  if (m.type === 'boss' && m.special === 'king' && m.kingWaiting) {
+    return;
+  }
+
   m.flash = 1; m.hp--;
   explode(m.x, m.y, m.size);
   G.score += G.wave * m.maxHp;
   hsVal.textContent = G.score.toLocaleString();
   if (m.hp <= 0) {
     m.dead = true;
-    G.score += G.wave * m.maxHp * 4; // kill bonus
+    G.score += G.wave * m.maxHp * 4;
     hsVal.textContent = G.score.toLocaleString();
-    onMonsterRemoved();
+    // Boss kills all its minions
+    if (m.type === 'boss') killBossMinions(m.id);
+    // Projectile monsters don't trigger wave progression
+    if (!m.isProjectileMonster) onMonsterRemoved();
   } else {
     m.wi++;
   }
 }
 
 function hurtPlayer(dmg = 1) {
+  if (G.godMode) return;
   G.playerHP = Math.max(0, G.playerHP - dmg);
   refreshLives();
   plEmoji.style.transform = 'scale(1.5) rotate(-15deg)';
   setTimeout(() => plEmoji.style.transform = '', 220);
   if (G.playerHP <= 0) endGame();
+}
+
+/* ================================================================
+   WEATHER SYSTEM
+================================================================ */
+const WEATHERS = ['sunny','foggy','drizzle','raining','snowing','blizzard','night','fall','blossom'];
+const WEATHER_ICONS = {
+  sunny:'🌞', foggy:'🌫️', drizzle:'🌦', raining:'🌧',
+  snowing:'🌨', blizzard:'❄️', night:'🌑', fall:'🍁', blossom:'🌸'
+};
+const WEATHER_WEIGHTS = {
+  sunny:30, foggy:12, drizzle:14, raining:12,
+  snowing:10, blizzard:6, night:10, fall:8, blossom:8
+};
+
+function rollWeather(wn) {
+  if (wn < 2) return 'sunny';
+  const pool = [];
+  const weights = { ...WEATHER_WEIGHTS };
+  if (wn < 10) weights.night = 0; // night only from wave 10
+  for (const [w, wt] of Object.entries(weights))
+    for (let i = 0; i < wt; i++) pool.push(w);
+  return pool[Math.floor(Math.random() * pool.length)];
+}
+
+function initWeather(w) {
+  G.weather = w;
+  G.wxParticles = [];
+  G.wxFogOffset = 0;
+  G.wxNight = (w === 'night');
+  if (weatherIconEl) weatherIconEl.textContent = WEATHER_ICONS[w] || '🌞';
+  // Seed particles
+  const count = {drizzle:120, raining:280, snowing:160, blizzard:420, fall:50, blossom:50}[w] || 0;
+  for (let i = 0; i < count; i++) {
+    G.wxParticles.push(mkWxParticle(w, true));
+  }
+}
+
+function mkWxParticle(type, scatter) {
+  const p = { type, life: 1 };
+  p.x = Math.random() * G.W;
+  p.y = scatter ? Math.random() * G.vH : -10;
+  if (type === 'drizzle' || type === 'raining') {
+    p.vy = 300 + Math.random() * 140;
+    p.vx = -30 + Math.random() * 60;
+    p.len = type === 'raining' ? 18 + Math.random() * 12 : 9 + Math.random() * 6;
+    p.alpha = type === 'raining' ? 0.55 + Math.random() * 0.3 : 0.38 + Math.random() * 0.25;
+  } else if (type === 'snowing' || type === 'blizzard') {
+    const sp = type === 'blizzard' ? 2.2 : 1;
+    p.r = type === 'blizzard' ? 2.5 + Math.random() * 5 : 1.8 + Math.random() * 3;
+    p.vy = 50 + Math.random() * 90 * sp;
+    p.vx = (-40 + Math.random() * 80) * sp;
+    p.wobble = Math.random() * Math.PI * 2;
+    p.wobbleSpd = 0.5 + Math.random() * 1.5;
+    // near-white hues
+    const hue = Math.random() * 40;
+    p.color = `hsl(${200+hue},${20+Math.random()*30}%,${88+Math.random()*10}%)`;
+  } else if (type === 'fall' || type === 'blossom') {
+    p.emoji = type === 'fall'
+      ? ['🍂','🍁','🍃'][Math.floor(Math.random()*3)]
+      : ['🌸','🌺','🌼'][Math.floor(Math.random()*3)];
+    p.r = 8 + Math.random() * 8;
+    p.vy = 40 + Math.random() * 60;
+    p.vx = -25 + Math.random() * 50;
+    p.rot = Math.random() * Math.PI * 2;
+    p.rotSpd = (-1+Math.random()*2) * 1.2;
+    p.alpha = 0.55 + Math.random() * 0.4;
+  }
+  return p;
+}
+
+function tickWeather(dt) {
+  const w = G.weather;
+  if (w === 'sunny') return;
+  if (w === 'foggy') {
+    // Drifting large transparent blobs moving sideways
+    const targets = 28;
+    while (G.wxParticles.length < targets) {
+      const p = { type: 'fogblob' };
+      p.x = Math.random() * G.W;
+      p.y = Math.random() * G.vH;
+      p.r  = 80 + Math.random() * 130;
+      p.vx = (10 + Math.random() * 18) * (Math.random() < 0.5 ? 1 : -1);
+      p.vy = (-5 + Math.random() * 10);
+      p.alpha = 0.12 + Math.random() * 0.16;
+      G.wxParticles.push(p);
+    }
+    for (const p of G.wxParticles) {
+      p.x += p.vx * dt; p.y += p.vy * dt;
+      if (p.x > G.W + p.r) p.x = -p.r;
+      if (p.x < -p.r)      p.x = G.W + p.r;
+      if (p.y < -p.r)      p.y = G.vH + p.r;
+      if (p.y > G.vH + p.r) p.y = -p.r;
+    }
+    return;
+  }
+
+  // Replenish particles
+  const targets = {drizzle:120, raining:280, snowing:160, blizzard:420, fall:50, blossom:50};
+  const cap = targets[w] || 0;
+  while (G.wxParticles.length < cap) G.wxParticles.push(mkWxParticle(w, false));
+
+  for (const p of G.wxParticles) {
+    if (w === 'drizzle' || w === 'raining') {
+      p.x += p.vx * dt; p.y += p.vy * dt;
+    } else if (w === 'snowing' || w === 'blizzard') {
+      p.wobble += p.wobbleSpd * dt;
+      p.x += p.vx * dt + Math.sin(p.wobble) * 0.5;
+      p.y += p.vy * dt;
+    } else if (w === 'fall' || w === 'blossom') {
+      p.x += p.vx * dt; p.y += p.vy * dt;
+      p.rot += p.rotSpd * dt;
+    }
+  }
+  // Remove off-screen
+  G.wxParticles = G.wxParticles.filter(p => p.y < G.vH + 20 && p.x > -30 && p.x < G.W + 30);
+}
+
+function drawWeather() {
+  const w = G.weather;
+  wxCanvas.width  = G.W;
+  wxCanvas.height = G.vH;
+  wxCtx.clearRect(0, 0, G.W, G.vH);
+
+  if (w === 'night') {
+    wxCtx.fillStyle = 'rgba(0,0,20,0.55)';
+    wxCtx.fillRect(0, 0, G.W, G.vH);
+    return;
+  }
+  if (w === 'foggy') {
+    for (const p of G.wxParticles) {
+      wxCtx.save();
+      wxCtx.filter = 'blur(22px)';
+      wxCtx.globalAlpha = p.alpha;
+      wxCtx.fillStyle = 'rgba(200,215,230,1)';
+      wxCtx.beginPath();
+      wxCtx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      wxCtx.fill();
+      wxCtx.restore();
+    }
+    return;
+  }
+
+  for (const p of G.wxParticles) {
+    wxCtx.save();
+    if (w === 'drizzle' || w === 'raining') {
+      wxCtx.globalAlpha = p.alpha;
+      wxCtx.strokeStyle = w === 'raining' ? 'rgba(120,175,220,1)' : 'rgba(150,200,235,0.9)';
+      wxCtx.lineWidth = w === 'raining' ? 2.2 : 1.4;
+      wxCtx.beginPath();
+      wxCtx.moveTo(p.x, p.y);
+      wxCtx.lineTo(p.x + p.vx * 0.03, p.y + p.len);
+      wxCtx.stroke();
+    } else if (w === 'snowing' || w === 'blizzard') {
+      wxCtx.globalAlpha = w === 'blizzard' ? 0.72 + Math.random() * 0.18 : 0.6 + Math.random() * 0.25;
+      wxCtx.fillStyle = p.color;
+      wxCtx.beginPath();
+      wxCtx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      wxCtx.fill();
+    } else if (w === 'fall' || w === 'blossom') {
+      wxCtx.globalAlpha = p.alpha;
+      wxCtx.font = `${p.r * 2}px serif`;
+      wxCtx.textAlign = 'center'; wxCtx.textBaseline = 'middle';
+      wxCtx.translate(p.x, p.y); wxCtx.rotate(p.rot);
+      wxCtx.fillText(p.emoji, 0, 0);
+    }
+    wxCtx.restore();
+  }
+}
+
+/* ================================================================
+   SPECIAL MONSTER TYPES
+   Special types: archer, musician, ice, warrior
+   Boss-only:     eruptor, king
+================================================================ */
+
+// Syllable pools for projectiles
+const ARROW_SYLS_EASY  = ['가','나','다','마','바','사','아','자','하','라','카','타','파'];
+const ARROW_SYLS_HARD  = ['꽃','닭','삶','읽','많','싫','밝','흙','넋','낚','볶','닮'];
+const NOTE_SYLS_EASY   = ['아','야','어','여','오','요','우','유','으','이'];
+const NOTE_SYLS_ADV    = ['와','워','외','위','의','왜','웨'];
+const ICE_CONSONANTS   = ['ㄱ','ㄴ','ㄷ','ㄹ','ㅁ','ㅂ','ㅅ','ㅇ','ㅈ','ㅊ','ㅋ','ㅌ','ㅍ','ㅎ'];
+const INSTRUMENTS      = ['🎤','🎹','🥁','🪘','🪇','🎷','🎺','🪗','🎸','🪕','🎻','🪈','🪉','🎙️'];
+const NOTES            = ['🎶','🎵','🎼'];
+const BOSS_EMOJIS      = ['🦖','🐉','🗿','🛸','🪬'];
+
+// Max special monsters per wave
+function specialCap(wn) {
+  if (wn < 5)  return 0;
+  if (wn < 10) return 1;
+  if (wn < 15) return 2;
+  if (wn < 20) return 3;
+  return 999;
+}
+
+// Chance a given monster is special (increases with wave)
+function specialChance(wn) {
+  if (wn < 5)  return 0;
+  if (wn < 10) return 0.18;
+  if (wn < 15) return 0.28;
+  if (wn < 20) return 0.35;
+  return 0.42;
+}
+
+function pickSpecialType(wn) {
+  const pool = ['archer', 'musician'];
+  if (wn >= 10) pool.push('ice', 'warrior');
+  return pool[Math.floor(Math.random() * pool.length)];
+}
+
+// Build template with special type attached
+function applySpecial(tmpl, stype, wn) {
+  // Special monsters can have 1-2 extra syllables
+  const extra = Math.random() < 0.4 ? 1 : (Math.random() < 0.2 ? 2 : 0);
+  const extraWds = extra > 0 ? pickWords(wn, extra) : [];
+  return {
+    ...tmpl,
+    special: stype,
+    words: [...tmpl.words, ...extraWds],
+    hp: tmpl.hp + extra,
+    maxHp: tmpl.maxHp + extra,
+    // special cost multiplier: 1.6x slower
+    spdMult: 0.62,
+  };
+}
+
+/* ================================================================
+   WAVE GENERATION (updated with specials)
+================================================================ */
+function genWave(wn) {
+  const boss = wn % 10 === 0;
+  if (boss) {
+    const hp  = Math.min(5 + Math.floor(wn/10)*2, 15);
+    const wds = pickWords(wn, hp + 2);
+    // Boss type variety
+    const bossEmoji = BOSS_EMOJIS[Math.floor(Math.random() * BOSS_EMOJIS.length)];
+    // Boss can be special type for extra challenge
+    const bossSpecialPool = ['eruptor', 'king', null, null, null]; // weight toward normal
+    if (wn >= 20) bossSpecialPool.push('eruptor','king','archer','musician');
+    const bossSpecial = bossSpecialPool[Math.floor(Math.random() * bossSpecialPool.length)];
+    return [{ type:'boss', hp, maxHp:hp, words:wds, bossEmoji, special: bossSpecial, spdMult: bossSpecial ? 0.45 : 1 }];
+  }
+
+  const budget  = wavePointBudget(wn);
+  const templates = [];
+  let spent = 0;
+  let specialCount = 0;
+  const cap = specialCap(wn);
+  const chance = specialChance(wn);
+
+  while (spent < budget) {
+    const hp   = calcHP(wn);
+    const cost = hp;
+    if (spent + cost > budget && templates.length > 0) break;
+    let tmpl = { type:'normal', hp, maxHp:hp, words: pickWords(wn, hp) };
+    // Maybe make special
+    if (specialCount < cap && Math.random() < chance) {
+      const stype = pickSpecialType(wn);
+      tmpl = applySpecial(tmpl, stype, wn);
+      specialCount++;
+    }
+    templates.push(tmpl);
+    spent += cost;
+  }
+
+  return templates;
+}
+
+/* ================================================================
+   SPECIAL MONSTER TICK HELPERS
+================================================================ */
+function tickSpecialMonster(m, dt, px, py) {
+  // Archer: shoot arrows
+  if (m.special === 'archer') {
+    if (m.arrowCooldown === undefined) m.arrowCooldown = 0;
+    if (m.shootPause === undefined) m.shootPause = 0;
+
+    if (m.shootPause > 0) {
+      m.shootPause -= dt;
+      return; // frozen while shooting
+    }
+
+    m.arrowCooldown -= dt;
+    // Only shoot once below 35% screen height and when no active arrow
+    const hasArrow = G.monsters.some(a => a.parentId === m.id && !a.dead);
+    if (m.arrowCooldown <= 0 && m.y > G.vH * 0.35 && !hasArrow) {
+      // Pause for 1 second, then spawn
+      m.shootPause = 1.0;
+      m.arrowCooldown = 3.5 + Math.random() * 2;
+      spawnArrow(m, px, py);
+    }
+  }
+
+  // Musician: spawn notes periodically
+  if (m.special === 'musician') {
+    if (m.noteCooldown === undefined) m.noteCooldown = 2 + Math.random() * 2;
+    m.noteCooldown -= dt;
+    if (m.noteCooldown <= 0 && m.y > G.vH * 0.2) {
+      m.noteCooldown = 2.5 + Math.random() * 2;
+      spawnNote(m);
+    }
+  }
+
+  // Ice: shoot ice cubes
+  if (m.special === 'ice') {
+    if (m.iceCooldown === undefined) m.iceCooldown = 3 + Math.random() * 2;
+    m.iceCooldown -= dt;
+    if (m.iceCooldown <= 0 && m.y > G.vH * 0.25) {
+      m.iceCooldown = 5 + Math.random() * 3;
+      spawnIce(m, px, py);
+    }
+  }
+
+  // Warrior: shield cycles
+  if (m.special === 'warrior') {
+    if (m.shieldTimer === undefined) m.shieldTimer = 3 + Math.random() * 4;
+    if (m.shielded === undefined) m.shielded = false;
+    if (m.shieldDur === undefined) m.shieldDur = 0;
+
+    if (m.shielded) {
+      m.shieldDur -= dt;
+      if (m.shieldDur <= 0) { m.shielded = false; m.shieldTimer = 3 + Math.random() * 4; }
+    } else {
+      m.shieldTimer -= dt;
+      if (m.shieldTimer <= 0) { m.shielded = true; m.shieldDur = 2.0; }
+    }
+  }
+}
+
+// Boss special tick (eruptor / king)
+function tickBossSpecial(m, dt, px, py) {
+  if (!m.special || m.type !== 'boss') return;
+
+  if (m.special === 'eruptor') {
+    if (m.eruptCooldown === undefined) m.eruptCooldown = 6 + Math.random() * 4;
+    if (m.eruptActive === undefined) m.eruptActive = 0;
+
+    if (m.eruptActive > 0) {
+      m.eruptActive -= dt;
+      if (m.eruptActive <= 0) m.eruptCooldown = 5 + Math.random() * 4;
+      // Spawn fireballs during eruption
+      if (m.nextFireball === undefined) m.nextFireball = 0;
+      m.nextFireball -= dt;
+      if (m.nextFireball <= 0) {
+        m.nextFireball = 0.7 + Math.random() * 0.5;
+        spawnFireball(px, py);
+      }
+      return; // paused
+    }
+    m.eruptCooldown -= dt;
+    if (m.eruptCooldown <= 0) { m.eruptActive = 3.5; m.nextFireball = 0; }
+  }
+
+  if (m.special === 'king') {
+    if (m.kingWaiting === undefined) m.kingWaiting = false;
+    if (m.kingCooldown === undefined) m.kingCooldown = 7 + Math.random() * 4;
+
+    if (m.kingWaiting) {
+      // Wait until all ninjas killed
+      const alive = G.monsters.some(n => n.parentId === m.id && !n.dead);
+      if (!alive) { m.kingWaiting = false; m.kingCooldown = 6 + Math.random() * 4; }
+      return; // paused, invulnerable
+    }
+    m.kingCooldown -= dt;
+    if (m.kingCooldown <= 0) {
+      m.kingWaiting = true;
+      const count = 2 + Math.floor(Math.random() * 3); // 2-4 ninjas
+      for (let i = 0; i < count; i++) spawnNinja(m);
+    }
+  }
+}
+
+// Spawn helpers
+function spawnArrow(archer, px, py) {
+  const syl = G.wave >= 10 && Math.random() < 0.3
+    ? ARROW_SYLS_HARD[Math.floor(Math.random() * ARROW_SYLS_HARD.length)]
+    : ARROW_SYLS_EASY[Math.floor(Math.random() * ARROW_SYLS_EASY.length)];
+  const arrow = {
+    id: ++_id, type: 'arrow', special: null,
+    emoji: '➷', parentId: archer.id,
+    x: archer.x, y: archer.y,
+    hp: 1, maxHp: 1,
+    words: [syl], wi: 0,
+    get word() { return this.words[this.wi]; },
+    size: 28,
+    baseSpd: 180 + Math.random() * 60,
+    get spd() { return this.baseSpd * (G.vH / G.H); },
+    tracking: true, dead: false, flash: 0,
+    wob: 0, scl: 1, sclDir: 1,
+    isProjectileMonster: true,
+    labelColor: '#6688cc',
+    // rotation toward player — will be updated in tick
+    angle: Math.atan2(py - archer.y, px - archer.x),
+  };
+  G.monsters.push(arrow);
+}
+
+function spawnNote(musician) {
+  const wn = G.wave;
+  const pool = wn >= 10
+    ? [...NOTE_SYLS_EASY, ...NOTE_SYLS_ADV]
+    : NOTE_SYLS_EASY;
+  const syl = pool[Math.floor(Math.random() * pool.length)];
+  const note = {
+    id: ++_id, type: 'note', special: null,
+    emoji: NOTES[Math.floor(Math.random() * NOTES.length)],
+    parentId: musician.id,
+    x: musician.x + (-20 + Math.random() * 40),
+    y: musician.y,
+    hp: 1, maxHp: 1,
+    words: [syl], wi: 0,
+    get word() { return this.words[this.wi]; },
+    size: 28,
+    baseSpd: monsterSpeed([syl], false, G.isMob) * 1.3,
+    get spd() { return this.baseSpd * (G.vH / G.H); },
+    tracking: true, dead: false, flash: 0,
+    wob: Math.random() * Math.PI * 2, scl: 1, sclDir: 1,
+    isProjectileMonster: true,
+    labelColor: '#ff88bb',
+  };
+  G.monsters.push(note);
+}
+
+function spawnIce(iceMonster, px, py) {
+  const consonant = ICE_CONSONANTS[Math.floor(Math.random() * ICE_CONSONANTS.length)];
+  const ice = {
+    id: ++_id, type: 'iceball', special: null,
+    emoji: '🧊', parentId: iceMonster.id,
+    x: iceMonster.x, y: iceMonster.y,
+    hp: 1, maxHp: 1,
+    words: [consonant], wi: 0,
+    get word() { return this.words[this.wi]; },
+    size: 28,
+    baseSpd: 200 + Math.random() * 80,
+    get spd() { return this.baseSpd * (G.vH / G.H); },
+    tracking: true, dead: false, flash: 0,
+    wob: 0, scl: 1, sclDir: 1,
+    isProjectileMonster: true,
+    labelColor: '#88ddff',
+    isIce: true,
+  };
+  G.monsters.push(ice);
+}
+
+function spawnFireball(px, py) {
+  const syl = ARROW_SYLS_EASY[Math.floor(Math.random() * ARROW_SYLS_EASY.length)];
+  const fb = {
+    id: ++_id, type: 'fireball', special: null,
+    emoji: '🔥',
+    x: 80 + Math.random() * (G.W - 160), y: -20,
+    hp: 1, maxHp: 1,
+    words: [syl], wi: 0,
+    get word() { return this.words[this.wi]; },
+    size: 30,
+    baseSpd: 160 + Math.random() * 60,
+    get spd() { return this.baseSpd * (G.vH / G.H); },
+    tracking: true, dead: false, flash: 0,
+    wob: Math.random() * Math.PI * 2, scl: 1, sclDir: 1,
+    isProjectileMonster: true,
+    labelColor: '#ffaa44',
+  };
+  G.monsters.push(fb);
+}
+
+function spawnNinja(king) {
+  const words = pickWords(G.wave, 2);
+  const ninja = {
+    id: ++_id, type: 'ninja', special: null,
+    emoji: '🥷',
+    parentId: king.id,
+    x: 80 + Math.random() * (G.W - 160), y: -30,
+    hp: 1, maxHp: 1,
+    words, wi: 0,
+    get word() { return this.words[this.wi]; },
+    size: 34,
+    baseSpd: monsterSpeed(words, false, G.isMob) * 1.5,
+    get spd() { return this.baseSpd * (G.vH / G.H); },
+    tracking: true, dead: false, flash: 0,
+    wob: Math.random() * Math.PI * 2, scl: 1, sclDir: 1,
+    isProjectileMonster: true,
+    labelColor: '#aaaaaa',
+  };
+  G.monsters.push(ninja);
+}
+
+/* ================================================================
+   KILL BOSS → kill its minions
+================================================================ */
+function killBossMinions(bossId) {
+  for (const m of G.monsters) {
+    if (m.parentId === bossId && !m.dead) {
+      explode(m.x, m.y, m.size);
+      m.dead = true;
+    }
+  }
+}
+
+/* ================================================================
+   FREEZE PLAYER
+================================================================ */
+function freezePlayer(dur) {
+  if (G.godMode) return;
+  G.frozen = true;
+  G.freezeTimer = dur;
+  freezeEl.classList.add('on');
+  setTimeout(() => {
+    G.frozen = false;
+    freezeEl.classList.remove('on');
+  }, dur * 1000);
+}
+
+/* ================================================================
+   CHEAT SYSTEM
+================================================================ */
+// Drag support for cheat menu
+let _cDrag = null;
+cheatMenu.querySelector('#cheat-title').addEventListener('pointerdown', e => {
+  const r = cheatMenu.getBoundingClientRect();
+  _cDrag = { ox: e.clientX - r.left, oy: e.clientY - r.top };
+  e.preventDefault();
+});
+document.addEventListener('pointermove', e => {
+  if (!_cDrag) return;
+  cheatMenu.style.left = (e.clientX - _cDrag.ox) + 'px';
+  cheatMenu.style.top  = (e.clientY - _cDrag.oy) + 'px';
+});
+document.addEventListener('pointerup', () => _cDrag = null);
+document.getElementById('cheat-close').onclick = () => cheatMenu.classList.remove('on');
+
+function openCheatMenu() {
+  cheatMenu.classList.add('on');
+  document.getElementById('c-god').textContent = G.godMode ? 'ON' : 'OFF';
+  document.getElementById('cheat-god-lbl').textContent = G.godMode ? '🛡 INVINCIBLE' : '';
+  document.getElementById('c-auto').textContent = G.autoShoot ? 'ON' : 'OFF';
+}
+
+function cheatToggleGod() {
+  G.godMode = !G.godMode;
+  document.getElementById('c-god').textContent = G.godMode ? 'ON' : 'OFF';
+  document.getElementById('cheat-god-lbl').textContent = G.godMode ? '🛡 INVINCIBLE' : '';
+}
+
+let _autoShootTimer = null;
+function cheatToggleAuto() {
+  G.autoShoot = !G.autoShoot;
+  document.getElementById('c-auto').textContent = G.autoShoot ? 'ON' : 'OFF';
+  if (G.autoShoot) {
+    _autoShootTimer = setInterval(() => {
+      if (G.phase !== 'play') return;
+      // Find topmost monster (highest y = closest to player)
+      const alive = G.monsters.filter(m => !m.dead && m.word);
+      if (!alive.length) return;
+      const target = alive.reduce((a, b) => b.y > a.y ? b : a);
+      fire(target);
+    }, 900);
+  } else {
+    clearInterval(_autoShootTimer);
+  }
+}
+
+function cheatAddLives() {
+  const n = parseInt(document.getElementById('c-lives-in').value) || 10;
+  G.playerMax = Math.min(100, G.playerMax + n);
+  G.playerHP  = Math.min(G.playerMax, G.playerHP + n);
+  refreshLives();
+}
+
+function cheatSetWave() {
+  const wn = parseInt(document.getElementById('c-wave-in').value) || 1;
+  G.monsters.forEach(m => m.dead = true);
+  G.monsters = []; G.projs = [];
+  startWave(wn);
+}
+
+function cheatSetWeather() {
+  const w = document.getElementById('c-wx').value;
+  initWeather(w);
+}
+
+function cheatSpawnBoss() {
+  const typeEl = document.getElementById('c-boss-type');
+  const stype = typeEl ? (typeEl.value || null) : null;
+  const hp  = Math.min(5 + Math.floor(G.wave/10)*2, 15);
+  const wds = pickWords(G.wave, hp + 2);
+  const bossEmoji = BOSS_EMOJIS[Math.floor(Math.random() * BOSS_EMOJIS.length)];
+  const tmpl = { type:'boss', hp, maxHp:hp, words:wds, bossEmoji, special: stype || null, spdMult: stype ? 0.45 : 1 };
+  G.monsters.push(mkMonster(tmpl));
+}
+
+function cheatSpawnCustom() {
+  const emojiEl = document.getElementById('c-mon-emoji');
+  const wordsEl = document.getElementById('c-mon-words');
+  const modEl   = document.getElementById('c-mon-mod');
+  const emoji   = emojiEl ? emojiEl.value : '👾';
+  const wordCnt = parseInt(wordsEl?.value) || 1;
+  const mod     = modEl ? (modEl.value || null) : null;
+  const hp      = wordCnt;
+  const wds     = pickWords(G.wave, wordCnt);
+  let tmpl = { type:'normal', hp, maxHp:hp, words:wds, special: mod, spdMult: mod ? 0.62 : 1 };
+  const m = mkMonster(tmpl);
+  m.emoji = emoji; // override emoji
+  G.monsters.push(m);
+}
+
+function cheatSpawnBossOld() {}
+function cheatSkipWave() {
+  G.monsters.forEach(m => m.dead = true);
+  G.monsters = []; G.projs = [];
+  waveComplete();
+}
+function cheatAddScore() {
+  G.score += 1000;
+  hsVal.textContent = G.score.toLocaleString();
+}
+function cheatKillAll() {
+  for (const m of G.monsters) { explode(m.x, m.y, m.size); m.dead = true; }
+  G.monsters = []; G.projs = [];
 }
 
 /* ================================================================
@@ -1269,8 +2102,12 @@ function loop(ts) {
   G.last = ts;
   resizeCv();
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-  tickMonsters(dt);
-  tickProjs(dt);
+  tickWeather(dt);
+  drawWeather();
+  if (!G.frozen) {
+    tickMonsters(dt);
+    tickProjs(dt);
+  }
   tickParts(dt);
   drawMonsters();
   drawProjs();
@@ -1285,41 +2122,59 @@ function playerAreaH() { return paEl ? paEl.offsetHeight + 10 : 90; }
 ================================================================ */
 function tickMonsters(dt) {
   const px = G.W / 2;
-  // Hitbox target: center of the player emoji
-  // pl-emoji is 5rem, so roughly 80px. It sits above inp-wrap.
   const paH  = playerAreaH();
-  const emojiCenterY = G.vH - paH + 10; // approx center of emoji
+  const emojiCenterY = G.vH - paH + 10;
   const py   = emojiCenterY;
-  const hitR = 38; // tight hitbox around emoji center
+  const hitR = 38;
 
   for (const m of G.monsters) {
     if (m.dead) continue;
 
-    // Walking animation: wobble x + breathe scale (slow and gentle)
+    // Walking animation
     m.wob += dt * 1.2;
     m.scl += dt * 0.35 * m.sclDir;
     if (m.scl > 1.025) m.sclDir = -1;
     if (m.scl < 0.975) m.sclDir =  1;
 
-    // Tracking threshold: start homing at 30% of visible height
-    if (!m.tracking && m.y > G.vH * 0.3) m.tracking = true;
+    // Special ticks (archer, musician, ice, warrior)
+    if (m.special && m.type !== 'boss') tickSpecialMonster(m, dt, px, py);
+    if (m.type === 'boss') tickBossSpecial(m, dt, px, py);
 
-    if (m.tracking) {
-      const dx = px - m.x, dy = py - m.y;
-      const d  = Math.hypot(dx, dy) || 1;
-      m.x += (dx/d) * m.spd * dt;
-      m.y += (dy/d) * m.spd * dt;
-    } else {
-      m.y += m.spd * dt;
+    // Freeze / paused-while-shooting checks
+    const paused = (m.shootPause > 0)
+      || (m.special === 'eruptor' && m.eruptActive > 0)
+      || (m.special === 'king' && m.kingWaiting);
+
+    if (!paused) {
+      if (!m.tracking && m.y > G.vH * 0.3) m.tracking = true;
+
+      // Arrows rotate toward player
+      if (m.type === 'arrow') {
+        m.angle = Math.atan2(py - m.y, px - m.x);
+      }
+
+      if (m.tracking) {
+        const dx = px - m.x, dy = py - m.y;
+        const d  = Math.hypot(dx, dy) || 1;
+        m.x += (dx/d) * m.spd * dt;
+        m.y += (dy/d) * m.spd * dt;
+      } else {
+        m.y += m.spd * dt;
+      }
     }
 
     if (m.flash > 0) m.flash -= dt * 5;
 
-    // Collision with player emoji (tight hitbox)
+    // Collision with player
     if (Math.hypot(m.x - px, m.y - py) < hitR + m.size * 0.22) {
       explode(m.x, m.y, m.size);
       m.dead = true;
-      hurtPlayer(m.maxHp); // damage = monster's total HP
+      // Ice: freeze instead of damage
+      if (m.isIce) {
+        freezePlayer(1.0);
+      } else if (!G.godMode) {
+        hurtPlayer(m.maxHp);
+      }
       onMonsterRemoved();
     }
   }
@@ -1362,79 +2217,115 @@ function tickParts(dt) {
 }
 
 /* ================================================================
-   DRAW — words rendered at highest z via canvas save/restore trick:
-   draw monster body first, then draw all word labels in a second pass
-   on top of everything (still under HUD which is DOM)
+   DRAW
 ================================================================ */
 function drawMonsters() {
-  // Pass 1: bodies (lower z)
+  // Pass 1: bodies
   for (const m of G.monsters) {
     if (m.dead) continue;
     ctx.save();
     ctx.translate(m.x, m.y);
-    ctx.translate(Math.sin(m.wob) * 3, 0);
+
+    // Size shrinks proportionally as monster loses HP words
+    // At maxHp: full size. At 1hp: 55% of full size. Linear in between.
+    const hpRatio  = m.maxHp > 1 ? m.hp / m.maxHp : 1;
+    const sizeScale = m.maxHp > 1 ? (0.55 + hpRatio * 0.45) : 1;
+    const drawSz   = m.size * sizeScale;
+
+    // Arrow rotation — ➷ glyph points roughly East (right), offset by -PI/4
+    if (m.type === 'arrow' && m.angle !== undefined) {
+      ctx.rotate(m.angle - Math.PI / 4);
+    } else {
+      ctx.translate(Math.sin(m.wob) * 3, 0);
+    }
     ctx.scale(m.scl, m.scl);
+
     if (m.flash > 0) ctx.filter = `brightness(${1 + m.flash * 2.5})`;
-    // Shadow pulses with the walking wobble for a grounded feel
     const shadowPulse = 0.5 + 0.5 * Math.abs(Math.sin(m.wob));
     ctx.shadowColor = 'rgba(0,0,0,0.82)';
     ctx.shadowBlur  = 12 + shadowPulse * 10;
     ctx.shadowOffsetY = 3 + shadowPulse * 4;
-    ctx.font = `${m.size}px serif`;
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
+    ctx.font = `${drawSz}px serif`;
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
     ctx.fillText(m.emoji, 0, 0);
     ctx.shadowBlur = 0; ctx.shadowOffsetY = 0;
     ctx.filter = 'none';
 
-    // Hearts (above emoji)
-    const heartSz = Math.max(8, 13 - m.maxHp * 0.5);
-    ctx.font = `${heartSz}px serif`;
-    const heartY = -(m.size * 0.6 + 14);
-    const hearts = Array.from({length:m.maxHp},(_,i)=>i<m.hp?'❤️':'🖤').join('');
-    ctx.textBaseline = 'middle';
-    ctx.fillText(hearts, 0, heartY);
+    // Wield icon (bottom-right, proportional to drawSz)
+    if (m.wieldIcon) {
+      const wSz = Math.max(14, drawSz * 0.42);
+      const shieldScale = (m.special === 'warrior' && m.shielded) ? 2.2 : 1.0;
+      ctx.font = `${wSz * shieldScale}px serif`;
+      ctx.textBaseline = 'middle';
+      ctx.fillText(m.wieldIcon, drawSz * 0.38, drawSz * 0.4);
+    }
+
+    // Hearts (above emoji, proportional to drawSz)
+    if (!m.isProjectileMonster) {
+      const heartSz = Math.max(8, 13 - m.maxHp * 0.5);
+      ctx.font = `${heartSz}px serif`;
+      const heartY = -(drawSz * 0.6 + 14);
+      const hearts = Array.from({length:m.maxHp},(_,i)=>i<m.hp?'❤️':'🖤').join('');
+      ctx.textBaseline = 'middle';
+      ctx.fillText(hearts, 0, heartY);
+    }
     ctx.restore();
   }
 
-  // Pass 2: word labels — drawn on top of all sprites
+  // Pass 2: word labels
   for (const m of G.monsters) {
     if (m.dead) continue;
+    if (m.special === 'warrior' && m.shielded && m.shieldDur > 1.0) continue;
+    if (m.type === 'boss' && m.special === 'king' && m.kingWaiting) continue;
+
+    const hpRatio  = m.maxHp > 1 ? m.hp / m.maxHp : 1;
+    const sizeScale = m.maxHp > 1 ? (0.55 + hpRatio * 0.45) : 1;
+    const drawSz   = m.size * sizeScale;
+
     ctx.save();
     ctx.translate(m.x, m.y);
 
-    const heartSz = Math.max(8, 13 - m.maxHp * 0.5);
-    const heartY  = -(m.size * 0.6 + 14);
-    const wordY   = heartY - heartSz - 7;
-    const wordSz  = Math.max(13, 19 - (m.word?.length || 0) * 0.2);
-
+    const wordSz  = Math.max(16, 23 - (m.word?.length || 0) * 0.3);
     ctx.font      = `bold ${wordSz}px "Noto Sans KR", sans-serif`;
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    // Strong shadow for readability over HUD
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
     ctx.shadowColor   = 'rgba(0,0,0,1)';
-    ctx.shadowBlur    = 6;
-    ctx.shadowOffsetY = 2;
+    ctx.shadowBlur    = 6; ctx.shadowOffsetY = 2;
     ctx.strokeStyle = 'rgba(0,0,0,.98)';
     ctx.lineWidth   = 5;
-    ctx.fillStyle   = m.type === 'boss' ? '#ffd700' : '#fff';
+    if (m.labelColor) {
+      ctx.fillStyle = m.labelColor;
+    } else if (m.type === 'boss') {
+      ctx.fillStyle = '#ffd700';
+    } else {
+      ctx.fillStyle = '#fff';
+    }
 
     if (m.word) {
-      const belowY = m.size * 0.6 + 18;
+      const belowY = drawSz * 0.6 + 18;
       ctx.strokeText(m.word, 0, belowY);
       ctx.shadowBlur = 0;
-      ctx.fillText  (m.word, 0, belowY);
+      ctx.fillText(m.word, 0, belowY);
     }
     ctx.restore();
   }
 }
 
 function drawProjs() {
+  const now = performance.now();
   for (const p of G.projs) {
     ctx.save();
     ctx.translate(p.x, p.y);
     ctx.rotate(p.rot);
-    ctx.font = `${p.size}px serif`;
+    // Arc illusion: scale and shadow pulse over 0.35s launch window
+    const age = Math.min(1, (now - (p.born || now)) / 350); // 0→1 over 350ms
+    // Sine arc: peaks at t=0.5, so size goes small→big→small
+    const arcT = Math.sin(age * Math.PI); // 0→1→0
+    const drawSize = p.size * (0.55 + arcT * 0.55); // 55%→110%→55% of base
+    const shadowSz = 4 + arcT * 18;
+    ctx.shadowColor = 'rgba(0,0,0,0.5)';
+    ctx.shadowBlur  = shadowSz;
+    ctx.shadowOffsetY = 2 + arcT * 8;
+    ctx.font = `${drawSize}px serif`;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText(p.emoji, 0, 0);
@@ -1464,7 +2355,10 @@ typing.addEventListener('keydown', e => {
   typing.value = '';
   if (!val) return;
 
-  // Find closest (highest y) matching monster
+  // Cheat code
+  if (val === 'cheatcode') { openCheatMenu(); return; }
+
+  // Find closest (highest y) matching monster — include projectile monsters
   let best = null, bestY = -Infinity;
   for (const m of G.monsters) {
     if (!m.dead && m.word === val && m.y > bestY) {
@@ -1497,9 +2391,14 @@ function startWave(wn) {
   ringArc.setAttribute('stroke-dasharray', '0 100');
   setBG(wn);
 
+  // Roll weather (from wave 5 onwards)
+  initWeather(rollWeather(wn));
+
+  const wxEmoji = WEATHER_ICONS[G.weather] || '🌞';
+  const bossEmojiMsg = tmpls[0]?.bossEmoji || '🐉';
   const msg = wn%10===0
-    ? `🐉 Wave ${wn}\nBOSS!`
-    : `화이팅!\nWave ${wn}`;
+    ? `${bossEmojiMsg} Wave ${wn}\nBOSS!`
+    : `화이팅!\nWave ${wn} ${wxEmoji}`;
   announce(msg, () => {
     G.wPhase = 'spawning';
     initWaveSpawner(tmpls);
@@ -1509,6 +2408,12 @@ function startWave(wn) {
 function waveComplete() {
   if (G.wPhase === 'wdone') return;
   G.wPhase = 'wdone';
+  // Post-boss heal: restore full HP + gain 1 max HP (cap 100)
+  if (G.wave % 10 === 0) {
+    G.playerMax = Math.min(100, G.playerMax + 1);
+    G.playerHP  = G.playerMax;
+    refreshLives();
+  }
   showConfetti();
   setTimeout(() => startWave(G.wave + 1), 3600);
 }
@@ -1601,9 +2506,14 @@ function resetState() {
   G.phase = 'title';
   G.monsters=[]; G.projs=[]; G.parts=[];
   G.wTemplates=[];
+  G.frozen = false; G.freezeTimer = 0;
+  G.wxParticles = [];
+  G.godMode = false;
+  freezeEl.classList.remove('on');
   hudEl.style.display='none';
   paEl.style.display='none';
   setBG(1);
+  initWeather('sunny');
 }
 
 function endGame() {
