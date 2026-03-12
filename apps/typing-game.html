@@ -73,16 +73,24 @@ body{
 .setup-wrap{
   display:grid; grid-template-columns:1fr 1fr;
   gap:12px; width:100%; margin-bottom:16px;
+  min-width:0; box-sizing:border-box;
+}
+@media(max-width:600px){
+  .setup-wrap{ grid-template-columns:1fr; }
+  .scard.wide{ grid-column:1; }
+  .shop-item:hover{ background:#f7f7fb; transform:none; }
+  #scard-options .gopts-grid{ max-height:65px; }
+  #wg-pick.wg-list{ max-height:140px !important; }
 }
 .scard{
   background:#f7f7fa;
   border:1px solid rgba(0,0,0,.07);
   border-radius:14px; padding:14px 16px;
-  color:#1a1a2e;
+  color:#1a1a2e; min-width:0; overflow:hidden;
 }
 .scard h3{
-  font-size:.65rem; text-transform:uppercase;
-  letter-spacing:2px; color:#3e3e3e; margin-bottom:10px;
+  font-size:.95rem; font-weight:500;
+  letter-spacing:.5px; color:#3e3e3e; margin-bottom:10px;
 }
 .scard.wide{ grid-column:1/-1; }
 
@@ -96,18 +104,22 @@ body{
   display:flex; align-items:center; justify-content:space-between;
   gap:8px; width:100%; box-sizing:border-box;
 }
-.gopt-label{ font-size:.62rem; text-transform:uppercase; letter-spacing:1.5px; color:#555; text-align:center; }
+.gopt-label{ font-size:.8rem; text-transform:uppercase; letter-spacing:1.2px; color:#555; }
 .lives-row{
   display:flex; align-items:center;
-  justify-content:center; gap:10px;
+  justify-content:flex-end; gap:10px;
 }
 .lives-row label{ font-size:1rem; opacity:.65; }
-#inp-lives{
+/* number inputs — shared style, no border, no arrows */
+input[type=number]{
   width:68px; padding:6px 8px;
-  background:#f7f7fa; border:1px solid #ddd;
+  background:#f7f7fa; border:none; outline:none;
   border-radius:8px; color:#2b2b2b;
-  font-family:inherit; font-size:1.2rem; text-align:center;
+  font-family:inherit; font-size:1.2rem; text-align:right;
+  -moz-appearance:textfield;
 }
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button{ -webkit-appearance:none; margin:0; }
 /* toggle switch */
 .gopt-toggle{ display:flex; align-items:center; cursor:pointer; }
 .gopt-toggle input{ display:none; }
@@ -196,6 +208,108 @@ body{
   transition:all .18s; letter-spacing:1px;
 }
 #btn-play:hover{ transform:translateY(-3px); box-shadow:0 14px 36px rgba(102,126,234,.6); }
+
+/* ===== SHOP ===== */
+#shop-card{
+  background:transparent;
+  border-radius:18px; padding:0;
+  overflow:hidden;
+}
+#shop-header{
+  display:flex; align-items:center; justify-content:space-between;
+  padding:12px 16px; cursor:pointer;
+  background:linear-gradient(135deg,#fff5cc 0%,#ffecb0 100%);
+  border-radius:18px;
+  transition:border-radius .2s;
+}
+#shop-card.open #shop-header{ border-radius:18px 18px 0 0; }
+#shop-header-title{ font-size:1.25rem; font-weight:800; color:#8a6200; letter-spacing:.5px; }
+#shop-chevron{ font-size:.9rem; color:#8a6200; transition:transform .2s; }
+#shop-card.open #shop-chevron{ transform:rotate(180deg); }
+#shop-wallet{
+  font-size:1.25rem; font-weight:700; color:#8a6200;
+  margin-left:auto; margin-right:16px;
+}
+#shop-body{
+  display:none; padding:14px 16px 16px; gap:10px; flex-direction:column;
+  background:rgba(255,255,255,.97);
+  border-radius:0 0 18px 18px;
+}
+#shop-card.open #shop-body{ display:flex; }
+.shop-section-title{
+  font-size:.72rem; text-transform:uppercase; letter-spacing:1.5px; color:#777;
+  font-weight:700; margin:6px 0 4px;
+}
+.shop-grid{
+  display:grid; grid-template-columns:repeat(auto-fill,minmax(90px,1fr)); gap:8px;
+}
+.shop-item{
+  display:flex; flex-direction:column; align-items:center; gap:5px;
+  background:#f7f7fb; border:2px solid transparent;
+  border-radius:14px; padding:12px 8px 10px;
+  cursor:pointer; transition:all .14s; position:relative;
+  text-align:center;
+}
+.shop-item:hover{ background:#f0f0ff; transform:translateY(-2px); }
+.shop-item.sold-out{ opacity:.4; cursor:default; }
+.shop-item-emoji{ font-size:2rem; line-height:1; }
+.shop-item-name{ font-size:1rem; font-weight:600; color:#333; letter-spacing:.2px; margin-top:4px; margin-bottom:4px; }
+.shop-item-price{
+  font-size:.72rem; font-weight:800; color:#a06600;
+  background:rgba(255,200,0,.18); border-radius:20px; padding:2px 8px;
+  margin-top:auto;
+}
+.shop-item-count{
+  position:absolute; top:4px; right:5px;
+  font-size:1rem; font-weight:900; color:#667eea;
+  background:rgba(102,126,234,.12); border-radius:10px; padding:1px 5px;
+}
+.shop-tooltip{
+  position:fixed; z-index:9999;
+  background:rgba(20,20,40,.93); color:#fff;
+  font-size:.9rem; border-radius:12px; padding:10px 14px;
+  max-width:210px; text-align:center; pointer-events:none;
+  backdrop-filter:blur(4px); line-height:1.5;
+  opacity:0; transition:opacity .12s;
+}
+.shop-tooltip.show{ opacity:1; }
+/* No hover effect on touch devices */
+@media(hover:none){
+  .shop-item:hover{ background:#f7f7fb; transform:none; }
+}
+/* Mobile shop confirm modal */
+#shop-modal{
+  position:fixed; inset:0; z-index:9998;
+  background:rgba(0,0,0,.55); display:flex; align-items:center; justify-content:center;
+  backdrop-filter:blur(3px);
+}
+#shop-modal.off{ display:none; }
+#shop-modal-box{
+  background:#fff; border-radius:20px; padding:24px 24px 20px;
+  width:min(320px,88vw); text-align:center;
+  box-shadow:0 8px 40px rgba(0,0,0,.3);
+  display:flex; flex-direction:column; gap:12px;
+}
+#shop-modal-emoji{ font-size:2.8rem; }
+#shop-modal-name{ font-size:1.25rem; font-weight:800; color:#222; }
+#shop-modal-desc{ font-size:1rem; color:#555; line-height:1.5; }
+#shop-modal-price{ font-size:1rem; font-weight:800; color:#a06600; }
+.shop-modal-btns{ display:flex; gap:10px; justify-content:center; }
+.shop-modal-btn{
+  padding:10px 0; border:none; border-radius:12px;
+  font-size:1.15rem; font-weight:700; cursor:pointer; transition:all .13s;
+  font-family:inherit;
+}
+#shop-modal-buy{ flex:1; background:#667eea; color:#fff; }
+#shop-modal-buy:hover{ background:#5568d5; }
+#shop-modal-cancel{ width:fit-content; padding:10px 18px; background:#eee; color:#444; }
+#shop-modal-cancel:hover{ background:#ddd; }
+@media(max-width:600px){
+  .shop-grid{ grid-template-columns:repeat(2,1fr); }
+  .shop-item-emoji{ font-size:2.2rem; }
+  .shop-item-name{ font-size:.9rem; }
+  .shop-item-price{ font-size:.8rem; }
+}
 
 /* ===== GAMEOVER ===== */
 #scr-over{
@@ -291,19 +405,19 @@ body{
   justify-content:space-between;
   z-index:50;
 }
-#hcard-wave{ pointer-events:none; min-width:160px; }
-#hcard-score{ pointer-events:all; min-width:130px; }
+#hcard-wave{ pointer-events:none; min-width:170px; }
+#hcard-score{ pointer-events:all; min-width:140px; }
 
 .hcard{
   background:rgba(0,0,0,.38);
   backdrop-filter:blur(10px);
   border:1px solid rgba(255,255,255,.18);
-  border-radius:12px; padding:7px 13px;
-  color:#fff; font-size:.78rem;
+  border-radius:12px; padding:8px 14px;
+  color:#fff; font-size:.88rem;
   display:flex; flex-direction:column; justify-content:space-between;
 }
 .hlbl{
-  font-size:.6rem; opacity:.5;
+  font-size:.82rem; opacity:.55;
   text-transform:uppercase; letter-spacing:1.5px;
   margin-bottom:6px;
 }
@@ -314,23 +428,23 @@ body{
 }
 .wave-ring-wrap{ flex-shrink:0; }
 .wave-text{ display:flex; flex-direction:column; }
-#hw-num{ font-size:1.5rem; font-weight:bold; line-height:1; }
-#hw-boss{ font-size:.62rem; opacity:.55; margin-top:2px; white-space:nowrap; }
+#hw-num{ font-size:2rem; font-weight:bold; line-height:1; }
+#hw-boss{ font-size:.82rem; opacity:.6; margin-top:2px; white-space:nowrap; }
 
 /* Score card body: vals on left, pause on right */
 .score-body{
   display:flex; align-items:center; gap:10px; justify-content:flex-end;
 }
 .score-vals{ display:flex; flex-direction:column; text-align:right; }
-#hs-val{ font-size:1.5rem; font-weight:bold; color:#ffd700; line-height:1; }
-#hs-best-row{ font-size:.62rem; opacity:.4; margin-top:2px; }
+#hs-val{ font-size:2rem; font-weight:bold; color:#ffd700; line-height:1; }
+#hs-best-row{ font-size:.82rem; opacity:.45; margin-top:2px; }
 #btn-pause{
   flex-shrink:0;
-  width:48px; height:48px;
+  width:50px; height:50px;
   background:rgba(255,255,255,.08);
   border:1px solid rgba(255,255,255,.2);
   border-radius:8px;
-  color:#fff; font-size:1.5rem; line-height:0;
+  color:#fff; font-size:1.6rem; line-height:0;
   cursor:pointer; transition:all .15s;
   display:flex; align-items:center; justify-content:center;
 }
@@ -340,11 +454,11 @@ body{
   #hud{ gap:5px; }
   #hcard-wave{ min-width:0; padding:6px 10px; }
   #hcard-score{ min-width:0; padding:6px 10px; }
-  #hw-num{ font-size:1.1rem; }
-  .wave-ring-wrap svg{ width:34px; height:34px; }
-  #hs-val{ font-size:1.1rem; }
+  #hw-num{ font-size:1.2rem; }
+  .wave-ring-wrap svg{ width:36px; height:36px; }
+  #hs-val{ font-size:1.2rem; }
   #hs-best-row{ display:none; }
-  #btn-pause{ width:36px; height:36px; font-size:1.1rem; }
+  #btn-pause{ width:38px; height:38px; font-size:1.2rem; }
 }
 
 /* ===== PLAYER AREA ===== */
@@ -401,6 +515,11 @@ body{
   transition:opacity .15s;
 }
 #freeze-overlay.on{ opacity:1; }
+#typing.frozen{
+  background:rgba(140,210,255,.4) !important;
+  color:rgba(200,235,255,.6) !important;
+  caret-color:transparent;
+}
 
 /* ===== WEATHER CANVAS ===== */
 #wx-canvas{ position:fixed; inset:0; pointer-events:none; z-index:52; opacity:0.72; }
@@ -420,7 +539,9 @@ body{
 #cheat-title{
   font-size:1rem; font-weight:bold; color:#aab8ff;
   margin-bottom:12px; display:flex; justify-content:space-between; align-items:center;
+  cursor:grab; user-select:none;
 }
+#cheat-title:active{ cursor:grabbing; }
 #cheat-close{ cursor:pointer; opacity:.6; font-size:1.2rem; line-height:1; }
 #cheat-close:hover{ opacity:1; }
 .cheat-row{
@@ -459,6 +580,127 @@ body{
   top:50%; /* overridden by JS on mobile */
 }
 #well-done.on{ opacity:1; }
+
+/* ── INVENTORY HUD ── */
+#inv-hud{
+  display:flex; flex-direction:column; align-items:center; gap:3px;
+  background:rgba(255,255,255,.12); backdrop-filter:blur(6px);
+  border:1px solid rgba(255,255,255,.25);
+  border-radius:14px; padding:5px 8px 6px;
+  min-width:88px;
+}
+#inv-main-row{
+  display:flex; align-items:center; gap:4px;
+}
+.inv-nav{
+  background:rgba(255,255,255,.18); border:none;
+  color:#fff; font-size:1rem; cursor:pointer;
+  border-radius:8px; padding:4px 7px; line-height:1;
+  transition:background .15s;
+}
+.inv-nav:hover{ background:rgba(255,255,255,.35); }
+#inv-slot{
+  position:relative;
+  width:52px; height:52px;
+  border:2px solid rgba(255,255,255,.5);
+  border-radius:12px;
+  background:rgba(0,0,0,.18);
+  display:flex; align-items:center; justify-content:center;
+  font-size:2rem; cursor:pointer;
+  overflow:hidden;
+  transition:border-color .15s;
+}
+#inv-slot:hover{ border-color:rgba(255,220,50,.9); }
+#inv-slot-hover{
+  position:absolute; inset:0;
+  display:flex; align-items:center; justify-content:center;
+  background:rgba(0,0,0,.68);
+  opacity:0; transition:opacity .15s;
+  border-radius:10px;
+}
+#inv-slot:hover #inv-slot-hover{ opacity:1; }
+#inv-use-hover{
+  font-size:.62rem; font-weight:700; color:#fff;
+  background:rgba(255,220,50,.85); border:none;
+  border-radius:6px; padding:3px 9px; cursor:pointer;
+  letter-spacing:.5px;
+  transition:background .12s;
+}
+#inv-use-hover:hover{ background:rgba(255,220,50,1); color:#222; }
+#inv-use-hover:disabled{ opacity:.35; cursor:default; }
+#inv-count{
+  position:absolute; bottom:2px; right:4px;
+  font-size:.78rem; font-weight:900; color:#fff;
+  text-shadow:0 1px 4px rgba(0,0,0,.95);
+  pointer-events:none; z-index:1;
+}
+#inv-hud.unavailable{
+  opacity:0.25;
+  pointer-events:none;
+}
+#inv-hud.unavailable #inv-slot-hover{ display:none; }
+#inv-item-name{
+  font-size:.65rem; color:#fff; font-weight:700;
+  letter-spacing:.8px; text-align:center;
+  text-transform:uppercase;
+  text-shadow:0 1px 4px rgba(0,0,0,.9), 0 0 8px rgba(0,0,0,.7);
+  min-height:.8rem;
+}
+
+/* ── GROUND ITEMS ── */
+#ground-items{
+  position:fixed; inset:0;
+  pointer-events:none; z-index:49;
+  overflow:visible;
+}
+.gitem{
+  position:absolute;
+  display:flex; flex-direction:column; align-items:center;
+  pointer-events:none;
+  user-select:none;
+  width:56px; height:56px;
+  overflow:visible;
+  animation:coin-bob 1.8s ease-in-out infinite alternate;
+  filter:drop-shadow(3px 4px 6px rgba(0,0,0,.55));
+}
+.gitem svg{ position:absolute; inset:0; width:56px; height:56px; overflow:visible; }
+.gitem-hanja{
+  position:absolute; inset:0;
+  display:flex; align-items:center; justify-content:center;
+  font-size:1.7rem; font-family:'Song Myung', serif;
+  font-weight:700;
+  z-index:1;
+}
+@keyframes coin-bob{
+  from{ transform:translateY(0px); filter:drop-shadow(3px 5px 7px rgba(0,0,0,.55)); }
+  to{   transform:translateY(-6px); filter:drop-shadow(3px 10px 10px rgba(0,0,0,.35)); }
+}
+/* coin glow pulses on the SVG group */
+.gitem-coin-group{
+  animation:coin-glow 1.4s ease-in-out infinite alternate;
+}
+@keyframes coin-glow{
+  from{ filter:drop-shadow(0 0 3px var(--coin-glow-a)); }
+  to{   filter:drop-shadow(0 0 10px var(--coin-glow-b)) drop-shadow(0 0 20px var(--coin-glow-a)); }
+}
+/* coin color themes */
+.gitem[data-coin="gold"]   { --coin-fill:#ffe033; --coin-rim:#b8860b; --coin-text:#5a3800; --coin-glow-a:rgba(255,200,30,.7); --coin-glow-b:rgba(255,220,80,1); }
+.gitem[data-coin="silver"] { --coin-fill:#e8e8e8; --coin-rim:#909090; --coin-text:#2a2a2a; --coin-glow-a:rgba(180,180,200,.7); --coin-glow-b:rgba(220,220,240,1); }
+.gitem[data-coin="bronze"] { --coin-fill:#cd7f32; --coin-rim:#8b4513; --coin-text:#3a1800; --coin-glow-a:rgba(180,100,20,.7); --coin-glow-b:rgba(220,140,50,1); }
+/* arc and fill use CSS vars */
+.gitem-coin-fill { fill:var(--coin-fill); stroke:var(--coin-rim); stroke-width:2.5; }
+.gitem-coin-arc  { fill:none; stroke:var(--coin-text); stroke-width:3; stroke-linecap:round; }
+/* 3D sheen: right-side darker ellipse */
+.gitem-coin-sheen{ fill:rgba(0,0,0,.12); }
+.gitem-hanja{ color:var(--coin-text); }
+
+/* ── ACTIVE EFFECT OVERLAY ── */
+#effect-bubble{
+  position:fixed; border-radius:50%;
+  pointer-events:none; z-index:38; /* below player-area (z:40) */
+  transition:opacity .4s;
+  display:none;
+}
 </style>
 </head>
 <body>
@@ -499,6 +741,14 @@ body{
         <div class="gopts-grid">
 
           <div class="gopt-card">
+            <div class="gopt-label">🇰🇷 한/영</div>
+            <label class="gopt-toggle">
+              <input type="checkbox" id="chk-korean-ui">
+              <span class="gopt-track"><span class="gopt-thumb"></span></span>
+            </label>
+          </div>
+
+          <div class="gopt-card">
             <div class="gopt-label">❤️ Starting Lives</div>
             <div class="lives-row">
               <input type="number" id="inp-lives" min="1" max="100" value="10">
@@ -506,9 +756,24 @@ body{
           </div>
 
           <div class="gopt-card">
+            <div class="gopt-label">🔡 한글 Size</div>
+            <div class="lives-row">
+              <input type="number" id="inp-hangul-size" min="18" max="52" value="32" step="2">
+            </div>
+          </div>
+
+          <div class="gopt-card">
             <div class="gopt-label">🔤 Varying Fonts</div>
             <label class="gopt-toggle">
               <input type="checkbox" id="chk-fonts" checked>
+              <span class="gopt-track"><span class="gopt-thumb"></span></span>
+            </label>
+          </div>
+
+          <div class="gopt-card">
+            <div class="gopt-label">🀄 Hanja Powerups</div>
+            <label class="gopt-toggle">
+              <input type="checkbox" id="chk-hanja">
               <span class="gopt-track"><span class="gopt-thumb"></span></span>
             </label>
           </div>
@@ -522,6 +787,16 @@ body{
           </div>
 
         </div>
+      </div>
+
+      <!-- SHOP -->
+      <div id="shop-card" class="scard wide">
+        <div id="shop-header" onclick="toggleShop()">
+          <span id="shop-header-title">🛒 Shop</span>
+          <span id="shop-wallet" class="shop-wallet-display">0원</span>
+          <span id="shop-chevron">▼</span>
+        </div>
+        <div id="shop-body"></div>
       </div>
 
     </div>
@@ -543,7 +818,6 @@ body{
 <!-- PAUSE -->
 <div id="scr-pause" class="screen menu-screen off">
   <div class="pause-card">
-    <button class="close-btn" onclick="window.location.href='../index.html'"></button>
     <h2>⏸ Paused</h2>
     <div class="pause-btns">
       <button class="pause-btn" id="btn-resume">▶ Resume</button>
@@ -574,17 +848,37 @@ body{
       </div>
     </div>
   </div>
+
+  <!-- INVENTORY HUD -->
+  <div id="inv-hud" style="display:none">
+    <div id="inv-main-row">
+      <button class="inv-nav" id="inv-prev" title="Ctrl+←">◁</button>
+      <div id="inv-slot">
+        <div id="inv-emoji"></div>
+        <div id="inv-count"></div>
+        <div id="inv-slot-hover">
+          <button id="inv-use-hover" title="Ctrl+Space">USE</button>
+        </div>
+      </div>
+      <button class="inv-nav" id="inv-next" title="Ctrl+→">▷</button>
+    </div>
+    <div id="inv-item-name"></div>
+  </div>
+
   <div class="hcard" id="hcard-score">
-    <div class="hlbl">Score</div>
+    <div class="hlbl">💰 원</div>
     <div class="score-body">
       <div class="score-vals">
         <div id="hs-val">0</div>
-        <div id="hs-best-row">Best: <span id="hs-best">0</span></div>
+        <div id="hs-best-row"><span id="hs-best-lbl">Best</span>: <span id="hs-best">0</span></div>
       </div>
       <button id="btn-pause">⏸</button>
     </div>
   </div>
 </div>
+
+<!-- GROUND ITEMS (drawn as DOM elements over canvas) -->
+<div id="ground-items"></div>
 
 <!-- PLAYER -->
 <div id="player-area">
@@ -610,6 +904,8 @@ body{
 
 <!-- FREEZE -->
 <div id="freeze-overlay"></div>
+<!-- EFFECT BUBBLE (stun/autokill) -->
+<div id="effect-bubble"></div>
 
 <!-- CHEAT MENU -->
 <div id="cheat-menu">
@@ -696,9 +992,52 @@ body{
     <button class="cheat-btn" style="width:100%" onclick="cheatSpawnCustom()">🐣 Spawn Custom</button>
   </div>
   <hr style="border-color:#333;margin:8px 0">
+  <div style="font-size:.72rem;color:#aab8ff;margin-bottom:6px">Powerups</div>
   <div class="cheat-row">
-    <label>Score +1000</label>
-    <button class="cheat-btn" onclick="cheatAddScore()">+Score</button>
+    <label>Give Item</label>
+    <select class="cheat-inp" id="c-item-type" style="width:90px">
+      <option value="❤️‍🩹">❤️‍🩹 Heal</option>
+      <option value="⚡">⚡ Stun</option>
+      <option value="🔥">🔥 Crit</option>
+      <option value="⏱️">⏱️ Slow</option>
+      <option value="🎯">🎯 Auto-kill</option>
+      <option value="⏰">⏰ Time Freeze</option>
+      <option value="🎁">🎁 2x Score</option>
+      <option value="🎲">🎲 Mystery</option>
+      <option value="⚔️">⚔️ Cleave</option>
+      <option value="🏯">🏯 World Skip</option>
+    </select>
+    <button class="cheat-btn" onclick="cheatGiveItem()">Give</button>
+  </div>
+  <div class="cheat-row">
+    <label>Spawn Item on Ground</label>
+  </div>
+  <div class="cheat-row">
+    <select class="cheat-inp" id="c-ground-item" style="width:90px">
+      <option value="❤️‍🩹">❤️‍🩹 Heal</option>
+      <option value="⚡">⚡ Stun</option>
+      <option value="🔥">🔥 Crit</option>
+      <option value="⏱️">⏱️ Slow</option>
+      <option value="🎯">🎯 Auto-kill</option>
+      <option value="⏰">⏰ Freeze</option>
+      <option value="🎁">🎁 2x Score</option>
+      <option value="🎲">🎲 Mystery</option>
+      <option value="⚔️">⚔️ Cleave</option>
+      <option value="🏯">🏯 World Skip</option>
+    </select>
+    <select class="cheat-inp" id="c-ground-tier" style="width:65px">
+      <option value="1">T1 (1 syl)</option>
+      <option value="2">T2 (1-2)</option>
+      <option value="3">T3 (1-3)</option>
+      <option value="4">T4 (1-4)</option>
+      <option value="5">T5 (1-5)</option>
+    </select>
+    <button class="cheat-btn" onclick="cheatSpawnGroundItem()">Drop</button>
+  </div>
+  <hr style="border-color:#333;margin:8px 0">
+  <div class="cheat-row">
+    <label>+1000원</label>
+    <button class="cheat-btn" onclick="cheatAddScore()">+1000 원</button>
   </div>
   <div class="cheat-row">
     <label>Skip Wave</label>
@@ -708,12 +1047,27 @@ body{
     <label>Kill All</label>
     <button class="cheat-btn red" onclick="cheatKillAll()">💀 Kill All</button>
   </div>
+  <hr style="border-color:#553333;margin:8px 0">
+  <div class="cheat-row">
+    <label style="color:#ff8888">Factory Reset</label>
+    <button class="cheat-btn red" onclick="cheatFactoryReset()">🗑 Reset All</button>
+  </div>
+</div>
+
+<div class="shop-tooltip" id="shop-tooltip"></div>
+<div id="shop-modal" class="off">
+  <div id="shop-modal-box">
+    <div id="shop-modal-emoji"></div>
+    <div id="shop-modal-name"></div>
+    <div id="shop-modal-desc"></div>
+    <div class="shop-modal-btns">
+      <button class="shop-modal-btn" id="shop-modal-cancel" onclick="closeShopModal()">✕</button>
+      <button class="shop-modal-btn" id="shop-modal-buy" onclick="confirmShopBuy()"></button>
+    </div>
+  </div>
 </div>
 
 <script>
-/* ================================================================
-   WORD DICTIONARY — sorted by jamo difficulty (d = keypress count)
-================================================================ */
 const RAW = [
   // ── 2 jamo (single simple syllable, no batchim) ─────────────────────────────
   "나","저","너","네","다","이","한","가","서","도","에","의","와","과",
@@ -813,22 +1167,22 @@ const WORDS = RAW.map(t => ({ text: t, d: countJamo(t) }));
 const MONSTERS = ['💩','👹','👺','👻','👽','👾','🤖','🧌','🧟','🧟‍♀️','🕷️','🦟','🦠','🪳','🐀','🐁','🎃','🦇','🦅','🥷🏼'];
 
 const WEAPONS = {
-  magic:     { label: 'Magic',      e:['🔮','🪄','💫','🌀','⚡','🔥','❄️','🌪️','🧿','💠','🌙','🕯️','☄️','🪐']},
-  love:      { label: 'Love',       e:['💘','❤️','💥','💖','💗','💓','💞','💕','🩷','🧡','💛','💚','💙','💜','🩵','🤍','🖤'] },
-  fairy:     { label: 'Fairy',      e:['🧚','🦄','🌈','✨','💫','🪄','🍄','🫧','🦋','🌸','🌟','🪩','🪞','🪅']},
-  weapons:   { label: 'Weapons',    e:['🗡️','🪓','🔪','💣','🧨','⛏️','🪚','🔨','🛡️','🪃','🗡️']},
-  fast_food: { label: 'Fast Food',  e:['🍔','🍟','🥤','🍗','🌭','🍕','🌯','🥪','🍿','🧇','🥓','🍖','🥯']},
-  ocean:     { label: 'Ocean',      e:['🌊','🐙','🦈','🐬','🐟','🐠','🦑','🦀','🦞','🐚','🪸','🪼','🐋','🦭'] },
-  sweets:    { label: 'Sweets',     e:['🍭','🍬','🍫','🍩','🍪','🧁','🍰','🍦','🍧','🍨','🍮','🍯'] },
-  bakery:    { label: 'Bakery',     e:['🥐','🍞','🥖','🥨','🥯','🧇','🥞','🥧','🍪','🧁','🍰','🥪','🧈'] },
-  elements:  { label: 'Elements',   e:['🔥','💧','💨','🪨','❄️','⚡','🌪️','🧊','☄️','🌩️','🌈','🌊'] },
-  hulk:      { label: 'Hulk',       e:['🏠','🏢','🏬','🏭','🚗','🚙','🚌','🚚','🛻','🪨','🌳','🏛️','🚜','🛴','🚲','🛺','✈️','🏰','🏯','🎡','🚧','⚓️','🚏','🚢','🚦','🤸','🪑','🛁','⚱️','📪'] },
-  fire:      { label: 'Fire',       e:['🔥','🧨','💥','☄️','🕯️','💣'] },
-  ice:       { label: 'Ice',        e:['❄️','🧊','🏔️','🌨️','⛄'] },
-  animals:   { label: 'Animals',    e:['🐶','🐱','🐯','🦁','🐘','🦒','🐵','🐸','🐍','🦅','🐝','🦋','🦍','🐺'] },
-  vehicles:  { label: 'Vehicles',   e:['🚗','🚙','🚌','🚚','🏎️','🚜','🛻','🏍️','🚲','🛵','✈️','🚁'] },
-  cyber:     { label: 'Cyber',      e:['💻','🖥️','⌨️','🖱️','💾','📀','🔌','📡','🛰️','🤖','🦾','🔋','🕹️','🎮','📱','💿'] },
-  athlete:   { label: 'Athlete',    e:['⚽️','🏀','🏈','⚾️','🥎','🏐','🏉','🥏','🎱'] },
+  magic:     { label: 'Magic',      ko:'마법',      e:['🔮','🪄','💫','🌀','⚡','🔥','❄️','🌪️','🧿','💠','🌙','🕯️','☄️','🪐']},
+  love:      { label: 'Love',       ko:'사랑',      e:['💘','❤️','💖','💗','💓','💞','💕','🩷','🧡','💛','💚','💙','💜','🩵','🤍','🖤'] },
+  fairy:     { label: 'Fairy',      ko:'요정',      e:['🧚','🦄','🌈','✨','💫','🪄','🍄','🫧','🦋','🌸','🌟','🪩','🪞','🪅']},
+  weapons:   { label: 'Weapons',    ko:'무기',      e:['🗡️','🪓','🔪','💣','🧨','⛏️','🪚','🔨','🛡️','🪃','🗡️']},
+  fast_food: { label: 'Fast Food',  ko:'패스트푸드', e:['🍔','🍟','🥤','🍗','🌭','🍕','🌯','🥪','🍿','🧇','🥓','🍖','🥯']},
+  ocean:     { label: 'Ocean',      ko:'바다',      e:['🌊','🐙','🦈','🐬','🐟','🐠','🦑','🦀','🦞','🐚','🪸','🪼','🐋','🦭'] },
+  sweets:    { label: 'Sweets',     ko:'달콤함',    e:['🍭','🍬','🍫','🍩','🍪','🧁','🍰','🍦','🍧','🍨','🍮','🍯'] },
+  bakery:    { label: 'Bakery',     ko:'베이커리',  e:['🥐','🍞','🥖','🥨','🥯','🧇','🥞','🥧','🍪','🧁','🍰','🥪','🧈'] },
+  elements:  { label: 'Elements',   ko:'원소',      e:['🔥','💧','💨','🪨','❄️','⚡','🌪️','🧊','☄️','🌩️','🌈','🌊'] },
+  hulk:      { label: 'Hulk',       ko:'헐크',      e:['🏠','🏢','🏬','🏭','🚗','🚙','🚌','🚚','🛻','🪨','🌳','🏛️','🚜','🛴','🚲','🛺','✈️','🏰','🏯','🎡','🚧','⚓️','🚏','🚢','🚦','🤸','🪑','🛁','⚱️','📪'] },
+  fire:      { label: 'Fire',       ko:'불',        e:['🔥','🧨','💥','☄️','🕯️','💣'] },
+  ice:       { label: 'Ice',        ko:'얼음',      e:['❄️','🧊','🏔️','🌨️','⛄'] },
+  animals:   { label: 'Animals',    ko:'동물',      e:['🐶','🐱','🐯','🦁','🐘','🦒','🐵','🐸','🐍','🦅','🐝','🦋','🦍','🐺'] },
+  vehicles:  { label: 'Vehicles',   ko:'탈것',      e:['🚗','🚙','🚌','🚚','🏎️','🚜','🛻','🏍️','🚲','🛵','✈️','🚁'] },
+  cyber:     { label: 'Cyber',      ko:'사이버',    e:['💻','🖥️','⌨️','🖱️','💾','📀','🔌','📡','🛰️','🤖','🦾','🔋','🕹️','🎮','📱','💿'] },
+  athlete:   { label: 'Athlete',    ko:'운동',      e:['⚽️','🏀','🏈','⚾️','🥎','🏐','🏉','🥏','🎱'] },
 };
 
 /* Hero definitions: base emoji, whether it supports skin tones, gender variants.
@@ -906,16 +1260,16 @@ const HERO_DEFS = [
 ];
 
 const BGS = [
-  ['#c4c4cc','#a0a0aa'],  // neutral gray-blue (default)
-  ['#d4c8cc','#b8a8ae'],  // gray-rose
-  ['#c4ccd4','#a4b0ba'],  // gray-sky
-  ['#c4d0c8','#a4b4a8'],  // gray-green
-  ['#d0d0c4','#b8b8a4'],  // gray-yellow
-  ['#ccc4d0','#b0a8ba'],  // gray-purple
-  ['#d0c4c4','#b8a8a8'],  // gray-red
-  ['#c4d0cc','#a4b8b4'],  // gray-teal
-  ['#d0ccc4','#b8b4a8'],  // gray-amber
-  ['#ccc4d0','#b4a8b8'],  // gray-violet
+  ['#b8b8c8','#8c8c9e'],  // world 1 — cool gray-blue
+  ['#c8b4b4','#a08888'],  // world 2 — muted rose
+  ['#b4c4cc','#889eb0'],  // world 3 — slate blue
+  ['#b4ccb8','#88a88c'],  // world 4 — sage green
+  ['#ccc8a8','#aaa47e'],  // world 5 — warm sand
+  ['#c0b0cc','#9888b0'],  // world 6 — soft violet
+  ['#ccb4a8','#b09080'],  // world 7 — terracotta
+  ['#a8cccc','#80a8a8'],  // world 8 — teal
+  ['#ccc0a8','#b0a080'],  // world 9 — amber
+  ['#c0a8c4','#9c80a0'],  // world 10 — plum
 ];
 
 /* ================================================================
@@ -925,12 +1279,15 @@ const G = {
   phase: 'title',
   wave: 1,
   wPhase: 'idle',
+  announceQ: null, wdoneTimer: 0,
   playerHP: 5, playerMax: 5,
   hero: '😊', heroDefIdx: 0,
   heroSkinIdx: 0, heroGender: 'neutral',
   wgroup: 'magic',
   nextSpell: '🔮',
   score: 0, hiScore: parseInt(localStorage.getItem('kth_hi')||'0'),
+  wallet: parseInt(localStorage.getItem('kth_wallet')||'0'),
+  sessionEarned: 0,
   monsters: [], projs: [], parts: [],
   queue: [], qTotal: 0, killed: 0,
   spawnT: 0, spawnCap: 2,
@@ -1014,6 +1371,7 @@ const genderBtns = document.getElementById('gender-btns');
 HERO_DEFS.forEach((def, idx) => {
   const b = document.createElement('span');
   b.className = 'eopt' + (idx === 0 ? ' sel' : '');
+  b.dataset.heroIdx = idx;
   b.textContent = def.neutral[0];
   b.onclick = () => {
     hpick.querySelectorAll('.eopt').forEach(x => x.classList.remove('sel'));
@@ -1024,9 +1382,49 @@ HERO_DEFS.forEach((def, idx) => {
     updateSkinRow();
     G.hero = computeHeroEmoji();
     plEmoji.textContent = G.hero;
+    updateHeroButtonIcons();
+    saveHeroPrefs();
   };
   hpick.appendChild(b);
 });
+
+function updateHeroButtonIcons() {
+  hpick.querySelectorAll('.eopt').forEach(b => {
+    const idx = parseInt(b.dataset.heroIdx);
+    const def = HERO_DEFS[idx];
+    if (!def) return;
+    const skinIdx = def.hasSkin ? _selSkin : 0;
+    if (_selGender === 'man' && def.man)     b.textContent = def.man[skinIdx]   || def.man[0];
+    else if (_selGender === 'woman' && def.woman) b.textContent = def.woman[skinIdx] || def.woman[0];
+    else b.textContent = def.neutral[skinIdx] || def.neutral[0];
+  });
+}
+
+function saveHeroPrefs() {
+  const idx = HERO_DEFS.indexOf(_selHeroDef);
+  localStorage.setItem('kth_hero', JSON.stringify({ idx, skin: _selSkin, gender: _selGender }));
+}
+
+function loadHeroPrefs() {
+  try {
+    const p = JSON.parse(localStorage.getItem('kth_hero') || 'null');
+    if (!p) return;
+    if (p.idx >= 0 && p.idx < HERO_DEFS.length) {
+      _selHeroDef = HERO_DEFS[p.idx];
+      _selSkin    = p.skin || 0;
+      _selGender  = p.gender || 'neutral';
+      // Mark selected hero button
+      hpick.querySelectorAll('.eopt').forEach((b, i) => b.classList.toggle('sel', i === p.idx));
+      // Mark selected skin/gender
+      skinBtns.querySelectorAll('.skin-btn').forEach((b,i) => b.classList.toggle('sel', i === _selSkin));
+      genderBtns.querySelectorAll('.gender-btn').forEach(b => b.classList.toggle('sel', b.dataset.gender === _selGender));
+      updateSkinRow();
+      G.hero = computeHeroEmoji();
+      plEmoji.textContent = G.hero;
+      updateHeroButtonIcons();
+    }
+  } catch(e) {}
+}
 
 // Skin tone buttons
 const SKIN_LABELS = ['🖐️','🖐🏻','🖐🏼','🖐🏽','🖐🏾','🖐🏿'];
@@ -1040,6 +1438,8 @@ SKIN_LABELS.forEach((lbl, i) => {
     _selSkin = i;
     G.hero = computeHeroEmoji();
     plEmoji.textContent = G.hero;
+    updateHeroButtonIcons();
+    saveHeroPrefs();
   };
   skinBtns.appendChild(b);
 });
@@ -1048,6 +1448,7 @@ SKIN_LABELS.forEach((lbl, i) => {
 [['neutral','🧑'],['man','♂️'],['woman','♀️']].forEach(([g, lbl]) => {
   const b = document.createElement('button');
   b.className = 'gender-btn' + (g === 'neutral' ? ' sel' : '');
+  b.dataset.gender = g;
   b.textContent = lbl;
   b.onclick = () => {
     genderBtns.querySelectorAll('.gender-btn').forEach(x => x.classList.remove('sel'));
@@ -1055,6 +1456,8 @@ SKIN_LABELS.forEach((lbl, i) => {
     _selGender = g;
     G.hero = computeHeroEmoji();
     plEmoji.textContent = G.hero;
+    updateHeroButtonIcons();
+    saveHeroPrefs();
   };
   genderBtns.appendChild(b);
 });
@@ -1077,13 +1480,12 @@ const wgpick = document.getElementById('wg-pick');
 Object.entries(WEAPONS).forEach(([k, wg]) => {
   const b = document.createElement('button');
   b.className = 'wgbtn' + (k === 'magic' ? ' sel' : '');
+  b.dataset.wkey = k;
   b.innerHTML = `<span class="wg-lbl">${wg.label}</span>${wg.e.slice(0,8).join('')}`;
   b.onclick = () => {
     wgpick.querySelectorAll('.wgbtn').forEach(x => x.classList.remove('sel'));
     b.classList.add('sel');
-    // find key
-    const idx = [...wgpick.children].indexOf(b);
-    G.wgroup = Object.keys(WEAPONS)[idx] || 'magic';
+    G.wgroup = k;
   };
   wgpick.appendChild(b);
 });
@@ -1093,16 +1495,26 @@ document.getElementById('btn-restart').onclick = () => {
   scrOver.classList.add('off');
   scrTitle.classList.remove('off');
   resetState();
+  updateShopWalletDisplay();
+  renderShop();
 };
 document.getElementById('btn-pause').onclick   = pauseGame;
 document.getElementById('btn-resume').onclick  = resumeGame;
 document.getElementById('btn-menu').onclick    = () => {
+  // Transfer any in-session earnings to permanent wallet
+  if (G.sessionEarned && G.sessionEarned > 0) {
+    saveWallet();
+    G.sessionEarned = 0;
+  }
   document.getElementById('scr-pause').classList.add('off');
   scrTitle.classList.remove('off');
   resetState();
+  updateShopWalletDisplay();
+  renderShop();
 };
 
 function pauseGame() {
+  cheatMenu.classList.remove('on');
   if (G.phase !== 'play') return;
   G.phase = 'paused';
   document.getElementById('scr-pause').classList.remove('off');
@@ -1137,21 +1549,25 @@ hsBest.textContent = G.hiScore.toLocaleString();
    Wave 8+:  d ≤ 10+
 ================================================================ */
 function maxDiffForWave(wn) {
+  // Slow, steady ramp. Wave 1=simple, wave 50=hard, wave 50+=cap
   if (wn === 1) return 2;
   if (wn === 2) return 3;
   if (wn === 3) return 4;
   if (wn === 4) return 5;
-  if (wn === 5) return 6;
-  if (wn <= 7)  return 8;
-  if (wn <= 9)  return 10;
-  if (wn <= 12) return 13;
-  if (wn <= 16) return 16;
-  return Math.min(35, 16 + Math.floor((wn - 16) * 0.8));
+  if (wn <= 6)  return 6;
+  if (wn <= 8)  return 7;
+  if (wn <= 10) return 8;
+  if (wn <= 14) return 10;
+  if (wn <= 18) return 12;
+  if (wn <= 24) return 15;
+  if (wn <= 32) return 18;
+  if (wn <= 40) return 22;
+  return Math.min(28, 22 + Math.floor((wn - 40) * 0.3)); // very slow after 40
 }
 
 function minDiffForWave(wn) {
-  // ensure some easier words always appear too
-  return Math.max(2, Math.floor(maxDiffForWave(wn) * 0.3));
+  // Always keep a good mix of easier words — min is 40% of max
+  return Math.max(2, Math.floor(maxDiffForWave(wn) * 0.4));
 }
 
 function pickWords(wn, count) {
@@ -1172,66 +1588,82 @@ function pickWords(wn, count) {
 }
 
 /* ================================================================
-   MONSTER HP — tight control per wave
+   MONSTER HP — inverse relationship with word difficulty
+   High HP monsters get shorter/simpler words to compensate.
+   Specials always have HP=1 (their ability is the challenge).
 ================================================================ */
 function calcHP(wn) {
-  // Multi-life monsters appear from wave 5
-  if (wn < 5) return 1;
-  const r = Math.random();
-  if (wn < 7)  return r < 0.15 ? 2 : 1;
-  if (wn < 10) return r < 0.10 ? 3 : r < 0.35 ? 2 : 1;
-  const cap = Math.min(7, 1 + Math.floor(wn / 4));
-  return Math.max(1, cap - (r > 0.5 ? 1 : 0));
+  if (wn < 5)  return 1;
+  if (wn < 8)  return Math.random() < 0.12 ? 2 : 1;
+  if (wn < 12) return Math.random() < 0.08 ? 3 : Math.random() < 0.25 ? 2 : 1;
+  if (wn < 20) { const r = Math.random(); return r < 0.05 ? 4 : r < 0.18 ? 3 : r < 0.40 ? 2 : 1; }
+  if (wn < 30) { const r = Math.random(); return r < 0.06 ? 5 : r < 0.15 ? 4 : r < 0.30 ? 3 : r < 0.50 ? 2 : 1; }
+  if (wn < 50) { const r = Math.random(); return r < 0.05 ? 6 : r < 0.12 ? 5 : r < 0.22 ? 4 : r < 0.38 ? 3 : r < 0.55 ? 2 : 1; }
+  // Wave 50+: cap at 6HP, same distribution (speed/specials are the challenge)
+  const r = Math.random(); return r < 0.05 ? 6 : r < 0.12 ? 5 : r < 0.22 ? 4 : r < 0.38 ? 3 : r < 0.55 ? 2 : 1;
+}
+
+/* pickWords for a monster with given HP — high HP = simpler words */
+function pickWordsForMonster(wn, hp) {
+  // HP 1 = full wave difficulty; HP 4+ = cap at wave-5 equivalent difficulty
+  const effectiveWave = hp <= 1 ? wn : Math.max(1, wn - (hp - 1) * 4);
+  const maxD = maxDiffForWave(effectiveWave);
+  const minD = minDiffForWave(effectiveWave);
+  let pool = WORDS.filter(w => w.d >= minD && w.d <= maxD);
+  if (pool.length < hp) pool = WORDS.filter(w => w.d <= maxD);
+  if (pool.length < hp) pool = WORDS;
+  const used = new Set(G.monsters.flatMap(m => m.words));
+  const sh = [...pool].sort(() => Math.random() - 0.5);
+  const out = [];
+  for (const w of sh) {
+    if (!used.has(w.text)) { out.push(w.text); used.add(w.text); }
+    if (out.length >= hp) break;
+  }
+  while (out.length < hp) out.push(sh[out.length % sh.length]?.text || '가');
+  return out;
 }
 
 /* ================================================================
-   WAVE GENERATION — dynamic trigger-based spawning
-   Instead of pre-queuing all monsters, we use a budget system.
-   Each wave has a "point budget". Multi-HP monsters cost more points.
-   Monsters are released in groups; a new group triggers when
-   the previous group is sufficiently dealt with.
+   WAVE BUDGET — controls total monsters per wave.
+   Grows slowly; caps at wave 50.
+   Key insight: budget = total HP points, not monster count.
+   A 4HP monster costs 4pts but has simple words → fair.
 ================================================================ */
 function wavePointBudget(wn) {
-  if (wn === 1) return 1;      // tutorial: 1 monster
-  if (wn === 2) return 5;
-  if (wn === 3) return 8;
-  if (wn === 4) return 11;
-  return Math.floor(11 + (wn - 4) * 2.2);
+  if (wn === 1) return 1;
+  if (wn === 2) return 4;
+  if (wn === 3) return 6;
+  if (wn === 4) return 8;
+  if (wn === 5) return 10;
+  if (wn <= 8)  return 10 + (wn - 5) * 1.5;
+  if (wn <= 15) return 14.5 + (wn - 8) * 1.8;
+  if (wn <= 30) return 27 + (wn - 15) * 1.4;
+  if (wn <= 50) return 48 + (wn - 30) * 1.0;
+  return 68; // hard cap at wave 50+
 }
 
 function waveGroupSize(wn) {
-  // How many to send in each group
+  // How many monsters to send per group — kept small to avoid overwhelming
   if (wn === 1) return 1;
   if (wn <= 3)  return 2;
-  if (wn <= 6)  return 3;
-  if (wn <= 10) return 4;
-  return Math.min(6, 3 + Math.floor(wn / 6));
+  if (wn <= 7)  return 2;
+  if (wn <= 12) return 3;
+  if (wn <= 20) return 3;
+  if (wn <= 35) return 4;
+  return 5; // max ever
 }
 
-/* Build the wave's monster template list (budget-based) */
-function genWave(wn) {
-  const boss = wn % 10 === 0;
-  if (boss) {
-    const hp  = Math.min(5 + Math.floor(wn/10)*2, 15);
-    const wds = pickWords(wn, hp + 2);
-    return [{ type:'boss', hp, maxHp:hp, words:wds }];
-  }
-
-  const budget  = wavePointBudget(wn);
-  const templates = [];
-  let spent = 0;
-
-  while (spent < budget) {
-    const hp      = calcHP(wn);
-    const cost    = hp; // 1HP = 1pt, 2HP = 2pts, etc.
-    if (spent + cost > budget && templates.length > 0) break;
-    const wds = pickWords(wn, hp);
-    templates.push({ type:'normal', hp, maxHp:hp, words:wds });
-    spent += cost;
-  }
-
-  return templates;
+/* Max simultaneous words visible on screen (cognitive load cap).
+   This is enforced in the spawner trigger logic. */
+function maxSimultaneousWords(wn) {
+  if (wn <= 5)  return 5;
+  if (wn <= 10) return 7;
+  if (wn <= 20) return 10;
+  if (wn <= 35) return 13;
+  if (wn <= 50) return 16;
+  return 16; // cap after wave 50
 }
+
 
 /* ================================================================
    JAMO KEY-COUNT (counts physical keypresses for a Korean word)
@@ -1280,25 +1712,16 @@ function monsterKeyCount(words) {
 }
 
 /* ----------------------------------------------------------------
-   Speed model
-   
-   An absolute beginner reading Hangul for the first time needs:
-     - READ time: ~2.5 sec per syllable to recognise the characters
-     - TYPE time: ~0.4 keys/sec (hunt-and-peck on an unfamiliar layout)
-   
-   Combined: totalSec = syllableCount * READ_SEC + keyCount / KPS
-   
-   Monster speed = travelDistance / totalSec
-   
-   Speed only grows when a boss is beaten (every 10 waves).
-   Each monster also gets ±25% random jitter so they arrive spread out.
+   Speed model for A1 beginner: ~1-2 seconds per syllable to read,
+   ~1 key/sec typing. Speed grows slowly per world beaten.
+   Wave 50+: speed caps (difficulty = density + specials, not speed).
 ---------------------------------------------------------------- */
-const READ_SEC_PER_SYL_BASE  = 2.5;   // seconds to READ one syllable, world 1
-const READ_SEC_REDUCTION     = 0.18;  // read time shrinks per boss beaten
-const READ_SEC_MIN           = 0.15;  // floor (expert reads instantly)
-const KPS_BASE               = 0.4;   // keys/sec typing speed, world 1
-const KPS_PER_WORLD          = 0.18;  // typing speed increase per boss
-const KPS_CAP                = 6.0;   // expert cap
+const READ_SEC_PER_SYL_BASE  = 3.2;   // seconds to READ one syllable (beginner)
+const READ_SEC_REDUCTION     = 0.12;  // read time shrinks per boss beaten (slow)
+const READ_SEC_MIN           = 0.40;  // floor — even experts need 0.4s/syl
+const KPS_BASE               = 0.55;  // keys/sec at start (1 key per ~1.8s)
+const KPS_PER_WORLD          = 0.12;  // typing speed increase per boss (slow)
+const KPS_CAP                = 3.5;   // cap — fast typist, not superhuman
 
 function countSyllables(words) {
   return words.reduce((n, w) => {
@@ -1323,17 +1746,30 @@ function monsterSpeed(words, isBoss, mob) {
   const kps     = Math.min(KPS_CAP,       KPS_BASE + world * KPS_PER_WORLD);
   const totalSec = syls * readSec + keys / kps;
 
-  const travelH = G.vH * 0.72;
-  let spd = travelH / Math.max(1, totalSec);
+  // Compute actual travel distance: spawn above screen to player area bottom
+  // Spawn at -(size+20), player area at ~vH * 0.88. Travel is independent of vH ratio.
+  const actualTravel = G.vH * 0.88 + (mob?.size || 50) + 20;
+  const basePxPerSec = actualTravel / Math.max(0.5, totalSec);
+  let spd = basePxPerSec;
+
+  // Hard cap on speed for early waves — caps in px/s at 800px reference, scaled to actual screen
+  const REF_H = 800;
+  const scale = G.vH / REF_H;
+  const waveCap = (G.wave <= 3  ? 60  :
+                   G.wave <= 5  ? 80  :
+                   G.wave <= 10 ? 110 :
+                   G.wave <= 20 ? 160 : Infinity) * scale;
+  spd = Math.min(spd, waveCap);
+  if (G.shopMod_haste) spd *= 1.20;
+  if (G.shopMod_slowStart && G.wave <= 10) spd *= 0.65;
 
   if (isBoss) spd *= 0.55;
-  // Per-monster gaussian jitter — most monsters near base speed,
-  // extremes (±25%) are rare. Box-Muller transform.
-  const u1 = Math.random() || 1e-10, u2 = Math.random();
-  const gauss = Math.sqrt(-2 * Math.log(u1)) * Math.cos(2 * Math.PI * u2);
-  const jitter = Math.max(-0.25, Math.min(0.25, gauss * 0.1)); // σ=10%, clamp ±25%
+
+  // Jitter: small in early waves, grows slowly. Linear random (no gaussian outliers).
+  const maxJitter = Math.min(0.20, 0.05 + world * 0.025);
+  const jitter = -maxJitter + Math.random() * 2 * maxJitter;
   spd *= 1 + jitter;
-  return Math.max(20, spd);
+  return Math.max(15 * scale, spd);
 }
 /* ================================================================
    MONSTER FACTORY
@@ -1353,7 +1789,17 @@ function mkMonster(tmpl) {
   const size = isBoss ? 82 : 32 + tmpl.hp * 14;
   let spd  = monsterSpeed(tmpl.words, isBoss, mob);
   if (tmpl.spdMult) spd *= tmpl.spdMult;
-  const x    = 60 + Math.random() * (G.W - 120);
+
+  // Guaranteed minimum spacing from existing monsters' X positions
+  const minGap = Math.max(60, size * 1.4);
+  let x, attempts = 0;
+  do {
+    x = 60 + Math.random() * (G.W - 120);
+    attempts++;
+  } while (
+    attempts < 20 &&
+    G.monsters.some(m => !m.dead && Math.abs(m.x - x) < minGap)
+  );
 
   // Wield icon for special types
   let wieldIcon = null;
@@ -1421,8 +1867,7 @@ function sendNextGroup() {
 function onMonsterRemoved() {
   G.wKilled++;
   updProgress();
-  // If remaining active monsters <= threshold, send more
-  const remaining = G.monsters.filter(m => !m.dead).length
+  const remaining = G.monsters.filter(m => !m.dead && !m.isProjectileMonster).length
                   + (G.wTemplates ? G.wTemplates.length : 0);
   if (remaining === 0 && G.wPhase === 'spawning') {
     waveComplete();
@@ -1431,11 +1876,24 @@ function onMonsterRemoved() {
   // Send next group when active count drops low
   const active = G.monsters.filter(m => !m.dead).length;
   const triggerThreshold = Math.max(1, waveGroupSize(G.wave) - 1);
-  if (active <= triggerThreshold && G.wTemplates && G.wTemplates.length > 0) {
+  // Also enforce simultaneous words cap
+  const currentWords = G.monsters.filter(m => !m.dead).reduce((s,m) => s + m.words.length, 0);
+  const wordCap = maxSimultaneousWords(G.wave);
+  if (active <= triggerThreshold && currentWords < wordCap && G.wTemplates && G.wTemplates.length > 0) {
     sendNextGroup();
   }
 }
 
+function checkWaveStall() {
+  // Called when a projectile-monster dies — if no real monsters remain and
+  // no templates left, the wave is done (avoids stall when notes outlive parent)
+  if (G.wPhase !== 'spawning') return;
+  const realAlive = G.monsters.filter(m => !m.dead && !m.isProjectileMonster).length;
+  const templatesLeft = G.wTemplates ? G.wTemplates.length : 0;
+  if (realAlive === 0 && templatesLeft === 0) {
+    waveComplete();
+  }
+}
 function updProgress() {
   const pct = Math.min(100, G.wKilled / Math.max(1, G.wTotal) * 100);
   // circumference of r=15.9 circle ≈ 100 units for easy % math
@@ -1489,27 +1947,35 @@ function explode(x, y, sz) {
 ================================================================ */
 function hitMonster(m) {
   // Warrior shield blocks hit
-  if (m.special === 'warrior' && m.shielded) {
-    // Projectile just bounces off — no damage
-    return;
-  }
+  if (m.special === 'warrior' && m.shielded) return;
   // King is invulnerable while waiting for ninjas
-  if (m.type === 'boss' && m.special === 'king' && m.kingWaiting) {
-    return;
-  }
+  if (m.type === 'boss' && m.special === 'king' && m.kingWaiting) return;
 
-  m.flash = 1; m.hp--;
+  const dmg = (G.critShots > 0) ? 2 : 1;
+  if (G.critShots > 0) { G.critShots--; if (G.critShots === 0) { G.activeEffect = null; refreshInventoryUI(); } }
+
+  m.flash = 1;
+  m.hp -= dmg;
   explode(m.x, m.y, m.size);
-  G.score += G.wave * m.maxHp;
+  const scoreGain = G.wave * m.maxHp * (G.activeEffect?.type === 'double' || G.doubleScore > 0 ? 2 : 1);
+  G.score += scoreGain;
   hsVal.textContent = G.score.toLocaleString();
   if (m.hp <= 0) {
     m.dead = true;
-    G.score += G.wave * m.maxHp * 4;
+    G.score += G.wave * m.maxHp * 4 * (G.activeEffect?.type === 'double' ? 2 : 1);
     hsVal.textContent = G.score.toLocaleString();
-    // Boss kills all its minions
     if (m.type === 'boss') killBossMinions(m.id);
-    // Projectile monsters don't trigger wave progression
-    if (!m.isProjectileMonster) onMonsterRemoved();
+    if (!m.isProjectileMonster) {
+      onMonsterRemoved();
+      // Item drop chance (only non-boss mobs)
+      if (m.type !== 'boss' && shouldDropItem(G.wave)) {
+        spawnGroundItem(m.x, m.y - 20);
+      }
+    } else {
+      // Projectile monsters (notes, arrows, ice, ninja) don't count toward kill total,
+      // but their death might unblock a stalled wave — check if all real monsters are gone
+      checkWaveStall();
+    }
   } else {
     m.wi++;
   }
@@ -1522,6 +1988,406 @@ function hurtPlayer(dmg = 1) {
   plEmoji.style.transform = 'scale(1.5) rotate(-15deg)';
   setTimeout(() => plEmoji.style.transform = '', 220);
   if (G.playerHP <= 0) endGame();
+}
+
+/* ================================================================
+   POWERUP SYSTEM
+================================================================ */
+// Hanja pools by wave tier
+const HANJA_T1 = '人白北南小四軍水母學中外二敎金王東日木韓六西五室國火山青生民七年八三兄先女一門父萬弟寸九土長校大月十'.split('');
+const HANJA_T2 = '前電左道家午動全手正不時平農方安工物孝力答子間足江右車場後內海上下事名空姓自市話食世立男活漢每記直氣'.split('');
+const HANJA_T3 = '紙所草出育老地入便林語字里天登算秋千有數植口來住夕歌主川色村冬問同百面祖夫夏旗洞命休重邑花文然心春少'.split('');
+const HANJA_T4 = '業功作發形樂注始科藥短界分術雪幸昨代體明共才飲題線半角消運聞和第急等成勇社公弱清神堂用集高意書今會童省信對球身光放利果圖庭部班風讀各戰音表新窗反計理現'.split('');
+
+// Complex hangeul syllable builder for non-hanja mode
+const JAMO_ONSET  = 'ㄱㄴㄷㄹㅁㅂㅅㅈㅊㅋㅌㅍㅎㄲㄸㅃㅆㅉ'.split('');
+const JAMO_VOWEL  = 'ㅏㅑㅓㅕㅗㅛㅜㅠㅡㅣㅐㅒㅔㅖㅘㅙㅚㅝㅞㅟㅢ'.split('');
+const JAMO_CODA   = 'ㄱㄲㄳㄴㄵㄶㄷㄹㄺㄻㄼㄽㄾㄿㅀㅁㅂㅄㅅㅆㅇㅈㅊㅋㅌㅍㅎ'.split('');
+
+function buildComplexSyl() {
+  const o = JAMO_ONSET[Math.floor(Math.random()*JAMO_ONSET.length)];
+  const v = JAMO_VOWEL[Math.floor(Math.random()*JAMO_VOWEL.length)];
+  const c = JAMO_CODA[Math.floor(Math.random()*JAMO_CODA.length)];
+  // Compose: syllable = (onset_idx-1)*21*28 + (vowel_idx)*28 + coda_idx + 0xAC00
+  const onsets  = 'ㄱㄲㄴㄷㄸㄹㅁㅂㅃㅅㅆㅇㅈㅉㅊㅋㅌㅍㅎ'.split('');
+  const vowels  = 'ㅏㅐㅑㅒㅓㅔㅕㅖㅗㅘㅙㅚㅛㅜㅝㅞㅟㅠㅡㅢㅣ'.split('');
+  const codas   = ' ㄱㄲㄳㄴㄵㄶㄷㄹㄺㄻㄼㄽㄾㄿㅀㅁㅂㅄㅅㅆㅇㅈㅊㅋㅌㅍㅎ'.split('');
+  const oi = onsets.indexOf(o); const vi = vowels.indexOf(v); const ci = codas.indexOf(c);
+  if (oi < 0 || vi < 0 || ci < 0) return '뾇'; // fallback
+  return String.fromCharCode(0xAC00 + oi*21*28 + vi*28 + ci);
+}
+
+function pickHanjaForWave(wn) {
+  if (!G.hanjaEnabled) {
+    // Non-hanja mode: return 1-3 complex syllables based on tier
+    const cnt = wn < 20 ? 1 : wn < 40 ? (Math.random()<.5?1:2) : (Math.random()<.4?2:3);
+    return Array.from({length:cnt}, buildComplexSyl).join('');
+  }
+  let pool = [...HANJA_T1];
+  if (wn >= 10) pool = pool.concat(HANJA_T2);
+  if (wn >= 20) pool = pool.concat(HANJA_T3);
+  if (wn >= 30) pool = pool.concat(HANJA_T4);
+  if (wn >= 50) pool = pool.concat(HANJA_T4); // double weight on hard tier
+  return pool[Math.floor(Math.random()*pool.length)];
+}
+
+const POWERUP_DEFS = {
+  '❤️‍🩹': { name:'Heal',         rarity:0.18, desc:'+2 HP' },
+  '💛':    { name:'Golden Heart', rarity:0.10, desc:'+1 max life' },
+  '⚡':    { name:'Stun',         rarity:0.17, desc:'Next hit stuns 3s' },
+  '🔥':    { name:'Crit',         rarity:0.14, desc:'x2 dmg for 5 shots' },
+  '⏱️':   { name:'Slow',         rarity:0.14, desc:'-40% speed 20s' },
+  '🎯':    { name:'Auto-kill',    rarity:0.11, desc:'Next hit kills' },
+  '⏰':    { name:'Time Freeze',  rarity:0.07, desc:'Pause mobs 5s' },
+  '🎁':    { name:'2x Score',     rarity:0.06, desc:'Double score 30s' },
+  '🎲':    { name:'Mystery',      rarity:0.02, desc:'Random effect!' },
+  '⚔️':   { name:'Cleave',       rarity:0.01, desc:'Kill all mobs' },
+  '🏯':    { name:'World Skip',  rarity:0.00, desc:'+10 waves' },
+};
+const POWERUP_KEYS = Object.keys(POWERUP_DEFS);
+
+function rollPowerupDrop() {
+  // World Skip: rare drop, starts at 3% at wave 1, decays per wave, floor 0.4% at wave 50+
+  const wsChance = Math.max(0.004, 0.03 - G.wave * 0.0005);
+  if (Math.random() < wsChance) return '🏯';
+  // Standard weighted roll (excludes 🏯 which has rarity:0)
+  const r = Math.random();
+  let acc = 0;
+  for (const [k, d] of Object.entries(POWERUP_DEFS)) {
+    if (d.rarity <= 0) continue;
+    acc += d.rarity;
+    if (r < acc) return k;
+  }
+  return '❤️‍🩹';
+}
+
+// Ground item state
+// G.groundItems = [{ id, x, y, hanja, item, life, maxLife, el }]
+// G.inventory   = { stacks: [{item, count}], sel:0 }
+// G.activeEffect = null | { type, timer, data }
+
+function initPowerupState() {
+  G.groundItems  = [];
+  G.inventory    = { stacks:[], sel:0 };
+  G.activeEffect = null;
+  G.critShots    = 0;   // remaining crit shots
+  G.doubleScore  = 0;   // remaining seconds
+  G.slowTimer    = 0;
+  G.stunBubble   = false;
+  G.autokillBubble = false;
+  G._groundId    = 0;
+}
+
+// Drop chance per kill — rare base, scales slightly with wave
+function shouldDropItem(wn) {
+  let base = 0.04 + Math.min(wn * 0.001, 0.06); // 4%–10%
+  if (G.shopMod_tripleDrops) base = Math.min(0.40, base * 3);
+  return Math.random() < base;
+}
+
+// Spawn a ground item at (x, y)
+function spawnGroundItem(x, y) {
+  // Life: 1–5 min, harder waves lean longer
+  const minLife = 60, maxLife = 300;
+  const wFactor = Math.min(1, G.wave / 50);
+  let life = minLife + Math.random() * (maxLife - minLife) * (0.3 + wFactor * 0.7);
+  if (G.shopMod_magnetItems) life *= 3;
+
+  // Build key(s) — syllable stack for non-hanja mode
+  let keys; // array of strings; must type each in sequence
+  if (!G.hanjaEnabled) {
+    // tier based on wave: 1 syl always in pool, higher tiers add more syls
+    const tier = G.wave < 10 ? 1 : G.wave < 20 ? 2 : G.wave < 30 ? 3 : G.wave < 50 ? 4 : 5;
+    const maxSyls = tier; // T1=1, T2=up to 2, …T5=up to 5
+    const cnt = 1 + Math.floor(Math.random() * maxSyls); // 1..tier
+    keys = Array.from({length:cnt}, buildComplexSyl);
+  } else {
+    keys = [pickHanjaForWave(G.wave)]; // single hanja character
+  }
+
+  const COIN_TYPES = ['gold','silver','bronze'];
+  const coinType = COIN_TYPES[Math.floor(Math.random()*3)];
+
+  const item = rollPowerupDrop();
+  const el   = document.createElement('div');
+  el.className = 'gitem';
+  el.dataset.coin = coinType;
+  el.style.left = x + 'px';
+  el.style.top  = y + 'px';
+  el.style.transform = 'translate(-50%,-50%)';
+
+  const r = 24, cx = 28, cy = 28, circ = 2*Math.PI*r;
+  el.innerHTML = `
+    <svg viewBox="0 0 56 56" width="56" height="56">
+      <g class="gitem-coin-group">
+        <circle class="gitem-coin-fill" cx="${cx}" cy="${cy}" r="${r}"/>
+        <!-- 3D sheen: right-side dark crescent -->
+        <ellipse class="gitem-coin-sheen" cx="${cx+10}" cy="${cy}" rx="10" ry="${r-2}"/>
+        <circle class="gitem-coin-arc gitem-ring-arc" cx="${cx}" cy="${cy}" r="${r}"
+          stroke-dasharray="${circ} ${circ}" stroke-dashoffset="0"
+          stroke-linecap="round"
+          transform="rotate(-90 ${cx} ${cy})"/>
+      </g>
+    </svg>
+    <div class="gitem-hanja">${keys[0]}</div>`;
+
+  document.getElementById('ground-items').appendChild(el);
+  const entry = { id: ++G._groundId, x, y, keys, keyIdx:0, item, life, maxLife:life, el };
+  G.groundItems.push(entry);
+  return entry;
+}
+
+function updateCoinArc(gi) {
+  const arc = gi.el.querySelector('.gitem-ring-arc');
+  if (!arc) return;
+  const r = 24, circ = 2*Math.PI*r;
+  const ratio = Math.max(0, gi.life / gi.maxLife);
+  const dash  = circ * ratio;
+  arc.setAttribute('stroke-dasharray', `${dash} ${circ}`);
+}
+
+function tickGroundItems(dt) {
+  const toRemove = [];
+  for (const gi of G.groundItems) {
+    gi.life -= dt;
+    const ratio = Math.max(0, gi.life / gi.maxLife);
+    gi.el.style.opacity = Math.max(0.15, ratio * 0.85 + 0.15).toFixed(2);
+    updateCoinArc(gi);
+    if (gi.life <= 0) {
+      gi.el.remove(); toRemove.push(gi);
+    }
+  }
+  G.groundItems = G.groundItems.filter(g => !toRemove.includes(g));
+}
+
+// Try to collect hanja by typed string
+function tryCollectHanja(val) {
+  // Find ground item whose current key matches typed value
+  const gi = G.groundItems.find(g => g.keys[g.keyIdx] === val);
+  if (!gi) return false;
+
+  gi.keyIdx++;
+  if (gi.keyIdx < gi.keys.length) {
+    // More syllables to type — advance display to next key
+    gi.el.querySelector('.gitem-hanja').textContent = gi.keys[gi.keyIdx];
+    // Brief flash to signal progress
+    gi.el.style.filter = 'brightness(1.8)';
+    setTimeout(() => { if (gi.el) gi.el.style.filter = ''; }, 200);
+    return true;
+  }
+
+  // All keys typed — collect!
+  const hanjaEl = gi.el.querySelector('.gitem-hanja');
+  hanjaEl.textContent = gi.item;
+  hanjaEl.style.transition = 'transform 0.7s ease, opacity 0.7s ease';
+  hanjaEl.style.transform  = 'translateY(-40px) scale(1.5)';
+  hanjaEl.style.opacity    = '0';
+  gi.el.querySelector('svg').style.transition = 'opacity 0.4s';
+  gi.el.querySelector('svg').style.opacity    = '0';
+  setTimeout(() => { if (gi.el) gi.el.remove(); }, 750);
+  G.groundItems = G.groundItems.filter(g => g !== gi);
+  addToInventory(gi.item);
+  return true;
+}
+
+// Inventory management
+function addToInventory(item) {
+  const stack = G.inventory.stacks.find(s => s.item === item);
+  if (stack) stack.count++;
+  else G.inventory.stacks.push({ item, count:1 });
+  refreshInventoryUI();
+}
+
+function refreshInventoryUI() {
+  const inv = G.inventory;
+  const invHud = document.getElementById('inv-hud');
+  if (!inv.stacks.length) { invHud.style.display = 'none'; return; }
+  invHud.style.display = 'flex';
+  inv.sel = Math.max(0, Math.min(inv.sel, inv.stacks.length - 1));
+  const cur = inv.stacks[inv.sel];
+  document.getElementById('inv-emoji').textContent = cur ? cur.item : '';
+  document.getElementById('inv-count').textContent = cur && cur.count > 1 ? cur.count : '';
+  const nameEl = document.getElementById('inv-item-name');
+  if (nameEl) {
+    const rawName = cur ? (POWERUP_DEFS[cur.item]?.name || cur.item) : '';
+    nameEl.textContent = G.koreanUI ? (KO_UI.itemNames[rawName] || rawName) : rawName;
+  }
+  // Hide nav arrows when only 1 unique item type
+  const prevBtn = document.getElementById('inv-prev');
+  const nextBtn = document.getElementById('inv-next');
+  const showNav = inv.stacks.length >= 2;
+  if (prevBtn) prevBtn.style.display = showNav ? '' : 'none';
+  if (nextBtn) nextBtn.style.display = showNav ? '' : 'none';
+  // Dim entire panel when another effect is active
+  invHud.classList.toggle('unavailable', !!G.activeEffect);
+}
+
+function invNavigate(dir) {
+  const inv = G.inventory;
+  if (!inv.stacks.length) return;
+  inv.sel = ((inv.sel + dir) + inv.stacks.length) % inv.stacks.length;
+  refreshInventoryUI();
+}
+
+function invUse() {
+  if (G.activeEffect) return;
+  const inv = G.inventory;
+  if (!inv.stacks.length) return;
+  const stack = inv.stacks[inv.sel];
+  if (!stack) return;
+  const item = stack.item === '🎲' ? POWERUP_KEYS[Math.floor(Math.random()*POWERUP_KEYS.length)] : stack.item;
+  applyPowerup(item);
+  stack.count--;
+  if (stack.count <= 0) inv.stacks.splice(inv.sel, 1);
+  inv.sel = Math.min(inv.sel, Math.max(0, inv.stacks.length - 1));
+  refreshInventoryUI();
+}
+
+function applyPowerup(item) {
+  switch(item) {
+    case '❤️‍🩹':
+      G.playerHP = Math.min(G.playerMax, G.playerHP + 2);
+      refreshLives();
+      flashAnnounce('❤️‍🩹 +2 HP!', '#ff6b9d');
+      break;
+    case '💛':
+      if (G.playerMax < 100) {
+        const wasFull = G.playerHP >= G.playerMax;
+        G.playerMax = Math.min(100, G.playerMax + 1);
+        if (wasFull) G.playerHP = G.playerMax; // full → stays full
+        refreshLives();
+        flashAnnounce('💛 +1 Max Life!', '#ffd700');
+      } else {
+        flashAnnounce('💛 Already at max!', '#888');
+      }
+      break;
+    case '⚡':
+      G.stunBubble = true;
+      showBubble('yellow', 180);
+      G.activeEffect = { type:'stun', timer:60 }; // 60s max timeout
+      flashAnnounce('⚡ Stun bubble!', '#ffe066');
+      break;
+    case '🔥':
+      G.critShots = 5;
+      G.activeEffect = { type:'crit', timer:999 };
+      flashAnnounce('🔥 Crit x5!', '#ff6600');
+      break;
+    case '⏱️':
+      G.slowTimer = 20;
+      G.activeEffect = { type:'slow', timer:20 };
+      flashAnnounce('⏱️ Slow 20s!', '#aaffaa');
+      break;
+    case '🎯':
+      G.autokillBubble = true;
+      showBubble('red', 130);
+      G.activeEffect = { type:'autokill', timer:60 };
+      flashAnnounce('🎯 Auto-kill!', '#ff4444');
+      break;
+    case '⏰':
+      G.activeEffect = { type:'freeze', timer:5 };
+      flashAnnounce('⏰ Time Freeze 5s!', '#88ddff');
+      break;
+    case '🎁':
+      G.activeEffect = { type:'double', timer:30 };
+      flashAnnounce('🎁 2x Score 30s!', '#ffd700');
+      break;
+    case '⚔️':
+      for (const m of G.monsters) {
+        if (!m.dead) { explode(m.x, m.y, m.size); m.dead = true; }
+      }
+      G.monsters = []; G.projs = [];
+      if (G.wPhase === 'spawning') { G.wTemplates = []; waveComplete(); }
+      flashAnnounce('⚔️ CLEAVE!', '#ff2244');
+      break;
+    case '🏯':
+      // World Skip: jump +10 waves
+      { const targetWave = G.wave + 10;
+        for (const m of G.monsters) { if (!m.dead) { explode(m.x,m.y,m.size); m.dead=true; } }
+        G.monsters=[]; G.projs=[]; G.wTemplates=[];
+        const lbl = G.koreanUI ? '🏯 +10 웨이브!' : '🏯 World Skip!';
+        flashAnnounce(lbl, '#ffe066');
+        setTimeout(() => startWave(targetWave), 400);
+      }
+      break;
+  }
+}
+
+function showBubble(color, radius) {
+  const bub = document.getElementById('effect-bubble');
+  const px  = G.W / 2;
+  const py  = G.vH - playerAreaH() - 20;
+  const sz  = radius * 2;
+  bub.style.cssText = `display:block;width:${sz}px;height:${sz}px;
+    left:${px - radius}px;top:${py - radius}px;
+    border:4px solid ${color === 'yellow' ? 'rgba(255,220,50,.9)' : 'rgba(255,60,60,.9)'};
+    background:${color === 'yellow' ? 'rgba(255,220,50,.12)' : 'rgba(255,60,60,.1)'};
+    box-shadow:0 0 20px ${color === 'yellow' ? 'rgba(255,220,50,.5)' : 'rgba(255,60,60,.5)'};
+    opacity:1;`;
+}
+
+function hideBubble() {
+  const bub = document.getElementById('effect-bubble');
+  bub.style.opacity = '0';
+  setTimeout(() => { bub.style.display = 'none'; }, 400);
+}
+
+function flashAnnounce(msg, color) {
+  const display = G.koreanUI ? (KO_UI.announces[msg] || msg) : msg;
+  const el = document.getElementById('announce-txt');
+  el.style.color = color || '#fff';
+  el.innerHTML = display;
+  el.classList.add('on');
+  setTimeout(() => { el.classList.remove('on'); el.style.color = ''; }, 1200);
+}
+
+function tickActiveEffect(dt) {
+  if (!G.activeEffect) return;
+  const ef = G.activeEffect;
+  ef.timer -= dt;
+
+  if (ef.type === 'slow')   G.slowTimer = Math.max(0, ef.timer);
+  if (ef.type === 'freeze' && ef.timer > 0) {
+    // Freeze mobs in place (reuse frozen flag but without the blue overlay)
+    G.monsters.forEach(m => m._freezePaused = true);
+  } else if (ef.type === 'freeze' && ef.timer <= 0) {
+    G.monsters.forEach(m => { delete m._freezePaused; });
+  }
+
+  if (ef.timer <= 0) {
+    if (ef.type === 'stun' || ef.type === 'autokill') hideBubble();
+    if (ef.type === 'stun')      G.stunBubble = false;
+    if (ef.type === 'autokill')  G.autokillBubble = false;
+    G.activeEffect = null;
+    refreshInventoryUI();
+  }
+}
+
+// Check bubble collision with monsters
+function checkBubbleCollisions() {
+  if (!G.stunBubble && !G.autokillBubble) return;
+  const px = G.W / 2;
+  const py = G.vH - playerAreaH() - 20;
+  const r  = G.stunBubble ? 180 : 130;
+  for (const m of G.monsters) {
+    if (m.dead || m.isProjectileMonster) continue;
+    const dist = Math.hypot(m.x - px, m.y - py);
+    if (dist < r + m.size * 0.3) {
+      if (G.autokillBubble) {
+        explode(m.x, m.y, m.size); m.dead = true;
+        if (!m.isProjectileMonster) onMonsterRemoved();
+        else checkWaveStall();
+        // Bubble pops on first kill
+        hideBubble(); G.autokillBubble = false;
+        if (G.activeEffect?.type === 'autokill') { G.activeEffect = null; refreshInventoryUI(); }
+      } else if (G.stunBubble && !m._stunned) {
+        m._stunned = true;
+        m._stunnedTimer = 3.0;
+        // Bubble pops
+        hideBubble(); G.stunBubble = false;
+        if (G.activeEffect?.type === 'stun') { G.activeEffect = null; refreshInventoryUI(); }
+      }
+    }
+  }
 }
 
 /* ================================================================
@@ -1597,27 +2463,30 @@ function mkWxParticle(type, scatter) {
 function tickWeather(dt) {
   const w = G.weather;
   if (w === 'sunny') return;
-  if (w === 'foggy') {
-    // Drifting large transparent blobs moving sideways
-    const targets = 28;
-    while (G.wxParticles.length < targets) {
+  if (w === 'foggy' || w === 'blizzard') {
+    // Foggy: only fog blobs. Blizzard: fog blobs + snow particles
+    const targets = w === 'blizzard' ? 14 : 28;
+    const fogParticles = G.wxParticles.filter(p => p.type === 'fogblob');
+    while (fogParticles.length < targets) {
       const p = { type: 'fogblob' };
       p.x = Math.random() * G.W;
       p.y = Math.random() * G.vH;
       p.r  = 80 + Math.random() * 130;
       p.vx = (10 + Math.random() * 18) * (Math.random() < 0.5 ? 1 : -1);
       p.vy = (-5 + Math.random() * 10);
-      p.alpha = 0.12 + Math.random() * 0.16;
-      G.wxParticles.push(p);
+      p.alpha = w === 'blizzard' ? 0.06 + Math.random() * 0.08 : 0.12 + Math.random() * 0.16;
+      G.wxParticles.push(p); fogParticles.push(p);
     }
     for (const p of G.wxParticles) {
+      if (p.type !== 'fogblob') continue;
       p.x += p.vx * dt; p.y += p.vy * dt;
       if (p.x > G.W + p.r) p.x = -p.r;
       if (p.x < -p.r)      p.x = G.W + p.r;
       if (p.y < -p.r)      p.y = G.vH + p.r;
       if (p.y > G.vH + p.r) p.y = -p.r;
     }
-    return;
+    if (w === 'foggy') return;
+    // Blizzard: continue to tick snow particles below
   }
 
   // Replenish particles
@@ -1652,8 +2521,9 @@ function drawWeather() {
     wxCtx.fillRect(0, 0, G.W, G.vH);
     return;
   }
-  if (w === 'foggy') {
+  if (w === 'foggy' || w === 'blizzard') {
     for (const p of G.wxParticles) {
+      if (p.type !== 'fogblob') continue;
       wxCtx.save();
       wxCtx.filter = 'blur(22px)';
       wxCtx.globalAlpha = p.alpha;
@@ -1663,10 +2533,12 @@ function drawWeather() {
       wxCtx.fill();
       wxCtx.restore();
     }
-    return;
+    if (w === 'foggy') return;
+    // Blizzard: also draw snow below
   }
 
   for (const p of G.wxParticles) {
+    if (p.type === 'fogblob') continue; // already drawn above
     wxCtx.save();
     if (w === 'drizzle' || w === 'raining') {
       wxCtx.globalAlpha = p.alpha;
@@ -1709,22 +2581,24 @@ const INSTRUMENTS      = ['🎤','🎹','🥁','🪘','🪇','🎷','🎺','🪗
 const NOTES            = ['🎶','🎵','🎼'];
 const BOSS_EMOJIS      = ['🦖','🐉','🗿','🛸','🪬'];
 
-// Max special monsters per wave
+// Max special monsters per wave — hard cap to prevent overwhelming
 function specialCap(wn) {
   if (wn < 5)  return 0;
   if (wn < 10) return 1;
-  if (wn < 15) return 2;
-  if (wn < 20) return 3;
-  return 999;
+  if (wn < 20) return 1;
+  if (wn < 30) return 2;
+  if (wn < 40) return 2;
+  return 3; // max ever — 3 specials in any wave
 }
 
-// Chance a given monster is special (increases with wave)
+// Chance a given monster is special
 function specialChance(wn) {
   if (wn < 5)  return 0;
-  if (wn < 10) return 0.18;
-  if (wn < 15) return 0.28;
-  if (wn < 20) return 0.35;
-  return 0.42;
+  if (wn < 10) return 0.12;
+  if (wn < 15) return 0.18;
+  if (wn < 25) return 0.22;
+  if (wn < 40) return 0.28;
+  return 0.32; // cap
 }
 
 function pickSpecialType(wn) {
@@ -1750,42 +2624,50 @@ function applySpecial(tmpl, stype, wn) {
 }
 
 /* ================================================================
-   WAVE GENERATION (updated with specials)
+   WAVE GENERATION
+   Core principle: total cognitive load (words on screen) is bounded.
+   High HP → simpler words. Specials → HP=1, slow speed.
 ================================================================ */
 function genWave(wn) {
   const boss = wn % 10 === 0;
   if (boss) {
-    const hp  = Math.min(5 + Math.floor(wn/10)*2, 15);
-    const wds = pickWords(wn, hp + 2);
-    // Boss type variety
+    // Boss HP scales with world but words stay manageable
+    const hp  = Math.min(4 + Math.floor(wn/10)*2, 12);
+    const wds = pickWordsForMonster(wn, hp);
     const bossEmoji = BOSS_EMOJIS[Math.floor(Math.random() * BOSS_EMOJIS.length)];
-    // Boss can be special type for extra challenge
-    const bossSpecialPool = ['eruptor', 'king', null, null, null]; // weight toward normal
-    if (wn >= 20) bossSpecialPool.push('eruptor','king','archer','musician');
+    const bossSpecialPool = [null, null, null, 'eruptor', 'king'];
+    if (wn >= 30) bossSpecialPool.push('archer', 'musician');
     const bossSpecial = bossSpecialPool[Math.floor(Math.random() * bossSpecialPool.length)];
     return [{ type:'boss', hp, maxHp:hp, words:wds, bossEmoji, special: bossSpecial, spdMult: bossSpecial ? 0.45 : 1 }];
   }
 
-  const budget  = wavePointBudget(wn);
+  const budget    = Math.floor(wavePointBudget(wn));
   const templates = [];
   let spent = 0;
   let specialCount = 0;
-  const cap = specialCap(wn);
+  const cap    = specialCap(wn);
   const chance = specialChance(wn);
 
   while (spent < budget) {
     const hp   = calcHP(wn);
     const cost = hp;
-    if (spent + cost > budget && templates.length > 0) break;
-    let tmpl = { type:'normal', hp, maxHp:hp, words: pickWords(wn, hp) };
-    // Maybe make special
+    if (spent + cost > budget + 1 && templates.length > 0) break;
+    // Words: exactly hp words, but difficulty scales inversely with hp
+    const wds = pickWordsForMonster(wn, hp);
+    let tmpl = { type:'normal', hp, maxHp:hp, words: wds };
+
+    // Specials: always HP=1, 1 word — their ability is the difficulty
     if (specialCount < cap && Math.random() < chance) {
       const stype = pickSpecialType(wn);
-      tmpl = applySpecial(tmpl, stype, wn);
+      const specialWds = pickWordsForMonster(wn, 1);
+      tmpl = { type:'normal', hp:1, maxHp:1, words: specialWds,
+               special: stype, spdMult: 0.55 };
       specialCount++;
+      spent += 1; // always costs 1 pt
+    } else {
+      spent += cost;
     }
     templates.push(tmpl);
-    spent += cost;
   }
 
   return templates;
@@ -1795,11 +2677,12 @@ function genWave(wn) {
    SPECIAL MONSTER TICK HELPERS
 ================================================================ */
 function tickSpecialMonster(m, dt, px, py) {
-  // Proximity factor: the closer to player, the less likely to shoot
-  // At 70% of screen height (far) = full chance; at 90%+ (close) = near zero
-  const yPct = m.y / G.vH; // 0 = top, 1 = bottom
-  // shootProb: 1.0 when yPct <= 0.55, linearly drops to 0.05 at yPct >= 0.85
-  const shootProb = Math.max(0.05, Math.min(1.0, 1.0 - (yPct - 0.55) / 0.30));
+  // Monster must be fully visible before it can shoot
+  const fullyVisible = m.y > m.size * 0.6;
+  if (!fullyVisible) return;
+  const yPct = m.y / G.vH; // 0=top, 1=bottom
+  // shootProb: full chance when just visible, drops linearly as monster approaches player
+  const shootProb = Math.max(0.05, Math.min(1.0, 1.0 - (yPct - 0.15) / 0.65));
 
   // Archer: shoot arrows
   if (m.special === 'archer') {
@@ -1813,34 +2696,32 @@ function tickSpecialMonster(m, dt, px, py) {
 
     m.arrowCooldown -= dt;
     const hasArrow = G.monsters.some(a => a.parentId === m.id && !a.dead);
-    if (m.arrowCooldown <= 0 && m.y > G.vH * 0.35 && !hasArrow) {
+    if (m.arrowCooldown <= 0 && !hasArrow) {
       if (Math.random() < shootProb) {
-        m.shootPause = 1.0;
+        m.shootPause = 1.2;
         spawnArrow(m, px, py);
       }
-      m.arrowCooldown = 3.5 + Math.random() * 2;
+      m.arrowCooldown = 5 + Math.random() * 3;
     }
   }
 
-  // Musician: spawn notes periodically (not distance-gated)
+  // Musician: spawn notes periodically
   if (m.special === 'musician') {
-    if (m.noteCooldown === undefined) m.noteCooldown = 2 + Math.random() * 2;
+    if (m.noteCooldown === undefined) m.noteCooldown = 3 + Math.random() * 3;
     m.noteCooldown -= dt;
-    if (m.noteCooldown <= 0 && m.y > G.vH * 0.2) {
-      m.noteCooldown = 2.5 + Math.random() * 2;
+    if (m.noteCooldown <= 0) {
+      m.noteCooldown = 3.5 + Math.random() * 2.5;
       spawnNote(m);
     }
   }
 
   // Ice: shoot ice cubes
   if (m.special === 'ice') {
-    if (m.iceCooldown === undefined) m.iceCooldown = 3 + Math.random() * 2;
+    if (m.iceCooldown === undefined) m.iceCooldown = 4 + Math.random() * 3;
     m.iceCooldown -= dt;
-    if (m.iceCooldown <= 0 && m.y > G.vH * 0.25) {
-      if (Math.random() < shootProb) {
-        spawnIce(m, px, py);
-      }
-      m.iceCooldown = 5 + Math.random() * 3;
+    if (m.iceCooldown <= 0) {
+      if (Math.random() < shootProb) spawnIce(m, px, py);
+      m.iceCooldown = 6 + Math.random() * 4;
     }
   }
 
@@ -1996,7 +2877,7 @@ function spawnFireball(px, py) {
 }
 
 function spawnNinja(king) {
-  const words = pickWords(G.wave, 2);
+  const words = pickWordsForMonster(G.wave, 2);
   const ninja = {
     id: ++_id, type: 'ninja', special: null,
     emoji: '🥷',
@@ -2036,9 +2917,11 @@ function freezePlayer(dur) {
   G.frozen = true;
   G.freezeTimer = dur;
   freezeEl.classList.add('on');
+  typing.classList.add('frozen');
   setTimeout(() => {
     G.frozen = false;
     freezeEl.classList.remove('on');
+    typing.classList.remove('frozen');
   }, dur * 1000);
 }
 
@@ -2080,8 +2963,8 @@ function cheatToggleAuto() {
   if (G.autoShoot) {
     _autoShootTimer = setInterval(() => {
       if (G.phase !== 'play') return;
-      // Find topmost monster (highest y = closest to player)
-      const alive = G.monsters.filter(m => !m.dead && m.word);
+      // Only target monsters fully visible (y + half-size within viewport)
+      const alive = G.monsters.filter(m => !m.dead && m.word && (m.y - m.size * 0.5) > 0);
       if (!alive.length) return;
       const target = alive.reduce((a, b) => b.y > a.y ? b : a);
       fire(target);
@@ -2113,8 +2996,8 @@ function cheatSetWeather() {
 function cheatSpawnBoss() {
   const typeEl = document.getElementById('c-boss-type');
   const stype = typeEl ? (typeEl.value || null) : null;
-  const hp  = Math.min(5 + Math.floor(G.wave/10)*2, 15);
-  const wds = pickWords(G.wave, hp + 2);
+  const hp  = Math.min(4 + Math.floor(G.wave/10)*2, 12);
+  const wds = pickWordsForMonster(G.wave, hp);
   const bossEmoji = BOSS_EMOJIS[Math.floor(Math.random() * BOSS_EMOJIS.length)];
   const tmpl = { type:'boss', hp, maxHp:hp, words:wds, bossEmoji, special: stype || null, spdMult: stype ? 0.45 : 1 };
   G.monsters.push(mkMonster(tmpl));
@@ -2128,10 +3011,10 @@ function cheatSpawnCustom() {
   const wordCnt = parseInt(wordsEl?.value) || 1;
   const mod     = modEl ? (modEl.value || null) : null;
   const hp      = wordCnt;
-  const wds     = pickWords(G.wave, wordCnt);
-  let tmpl = { type:'normal', hp, maxHp:hp, words:wds, special: mod, spdMult: mod ? 0.62 : 1 };
+  const wds     = pickWordsForMonster(G.wave, wordCnt);
+  let tmpl = { type:'normal', hp, maxHp:hp, words:wds, special: mod, spdMult: mod ? 0.55 : 1 };
   const m = mkMonster(tmpl);
-  m.emoji = emoji; // override emoji
+  m.emoji = emoji;
   G.monsters.push(m);
 }
 
@@ -2146,8 +3029,82 @@ function cheatAddScore() {
   hsVal.textContent = G.score.toLocaleString();
 }
 function cheatKillAll() {
-  for (const m of G.monsters) { explode(m.x, m.y, m.size); m.dead = true; }
+  for (const m of G.monsters) {
+    if (!m.dead) { explode(m.x, m.y, m.size); m.dead = true; }
+  }
   G.monsters = []; G.projs = [];
+  if (G.wPhase === 'spawning') {
+    G.wTemplates = [];
+    waveComplete();
+  }
+}
+
+function saveWallet() {
+  localStorage.setItem('kth_wallet', G.wallet || 0);
+  updateShopWalletDisplay();
+}
+
+function cheatFactoryReset() {
+  if (!confirm('Reset ALL progress? (wallet, hi-score, hero prefs)')) return;
+  localStorage.removeItem('kth_hi');
+  localStorage.removeItem('kth_wallet');
+  localStorage.removeItem('kth_hero');
+  localStorage.removeItem('kth_shop_counts');
+  G.hiScore = 0; G.wallet = 0;
+  hsBest.textContent = '0';
+  updateShopWalletDisplay();
+  cheatMenu.classList.remove('on');
+  resetState();
+}
+
+function updateShopWalletDisplay() {
+  document.querySelectorAll('.shop-wallet-display').forEach(el => {
+    el.textContent = (G.wallet || 0).toLocaleString() + '원';
+  });
+}
+function cheatGiveItem() {
+  const item = document.getElementById('c-item-type')?.value || '❤️‍🩹';
+  addToInventory(item);
+}
+
+function cheatSpawnGroundItem() {
+  const item = document.getElementById('c-ground-item')?.value || '❤️‍🩹';
+  const tier = parseInt(document.getElementById('c-ground-tier')?.value || '1');
+  const x = 100 + Math.random() * (G.W - 200);
+  const y = 150 + Math.random() * (G.vH - 300);
+
+  let keys;
+  if (G.hanjaEnabled) {
+    const pools = [HANJA_T1, [...HANJA_T1,...HANJA_T2], [...HANJA_T1,...HANJA_T2,...HANJA_T3], [...HANJA_T1,...HANJA_T2,...HANJA_T3,...HANJA_T4]];
+    const pool  = pools[Math.min(tier-1, 3)];
+    keys = [pool[Math.floor(Math.random()*pool.length)]];
+  } else {
+    const cnt = Math.min(tier, 1 + Math.floor(Math.random() * tier));
+    keys = Array.from({length:cnt}, buildComplexSyl);
+  }
+
+  const COIN_TYPES = ['gold','silver','bronze'];
+  const coinType = COIN_TYPES[Math.floor(Math.random()*3)];
+  const life = 300;
+  const el = document.createElement('div');
+  el.className = 'gitem';
+  el.dataset.coin = coinType;
+  el.style.left = x + 'px'; el.style.top = y + 'px';
+  el.style.transform = 'translate(-50%,-50%)';
+  const r = 24, cx = 28, cy = 28, circ = 2*Math.PI*r;
+  el.innerHTML = `
+    <svg viewBox="0 0 56 56" width="56" height="56">
+      <g class="gitem-coin-group">
+        <circle class="gitem-coin-fill" cx="${cx}" cy="${cy}" r="${r}"/>
+        <ellipse class="gitem-coin-sheen" cx="${cx+10}" cy="${cy}" rx="10" ry="${r-2}"/>
+        <circle class="gitem-coin-arc gitem-ring-arc" cx="${cx}" cy="${cy}" r="${r}"
+          stroke-dasharray="${circ} ${circ}" stroke-dashoffset="0"
+          stroke-linecap="round" transform="rotate(-90 ${cx} ${cy})"/>
+      </g>
+    </svg>
+    <div class="gitem-hanja">${keys[0]}</div>`;
+  document.getElementById('ground-items').appendChild(el);
+  G.groundItems.push({ id: ++G._groundId, x, y, keys, keyIdx:0, item, life, maxLife:life, el });
 }
 
 /* ================================================================
@@ -2161,11 +3118,20 @@ function loop(ts) {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   tickWeather(dt);
   drawWeather();
-  if (!G.frozen) {
-    tickMonsters(dt);
-    tickProjs(dt);
-  }
+  tickMonsters(dt);
+  tickProjs(dt);
   tickParts(dt);
+  // Tick announce (replaces setTimeout-based announce so pause works)
+  tickAnnounce(dt);
+  // Tick wdone → next wave timer
+  if (G.wPhase === 'wdone' && G.wdoneTimer > 0) {
+    G.wdoneTimer -= dt;
+    if (G.wdoneTimer <= 0) startWave(G.wave + 1);
+  }
+  // Tick powerup ground items and active effects
+  tickGroundItems(dt);
+  tickActiveEffect(dt);
+  checkBubbleCollisions();
   drawMonsters();
   drawProjs();
   drawParts();
@@ -2200,10 +3166,16 @@ function tickMonsters(dt) {
     // Freeze / paused-while-shooting checks
     const paused = (m.shootPause > 0)
       || (m.special === 'eruptor' && m.eruptActive > 0)
-      || (m.special === 'king' && m.kingWaiting);
+      || (m.special === 'king' && m.kingWaiting)
+      || m._freezePaused   // Time Freeze powerup
+      || (m._stunned && (m._stunnedTimer = Math.max(0, (m._stunnedTimer||0) - dt)) > 0);
 
     if (!paused) {
+      if (m._stunned) m._stunned = false; // stun expired
       if (!m.tracking && m.y > G.vH * 0.3) m.tracking = true;
+
+      // Slow powerup
+      const spdMult = G.activeEffect?.type === 'slow' ? 0.6 : 1.0;
 
       // Arrows rotate toward player
       if (m.type === 'arrow') {
@@ -2213,10 +3185,10 @@ function tickMonsters(dt) {
       if (m.tracking) {
         const dx = px - m.x, dy = py - m.y;
         const d  = Math.hypot(dx, dy) || 1;
-        m.x += (dx/d) * m.spd * dt;
-        m.y += (dy/d) * m.spd * dt;
+        m.x += (dx/d) * m.spd * spdMult * dt;
+        m.y += (dy/d) * m.spd * spdMult * dt;
       } else {
-        m.y += m.spd * dt;
+        m.y += m.spd * spdMult * dt;
       }
     }
 
@@ -2344,7 +3316,7 @@ function drawMonsters() {
 
     const LABEL_FONTS = ['"Noto Sans KR"', '"Song Myung"', '"Nanum Myeongjo"'];
     const fontFace = G.varyFonts ? LABEL_FONTS[m.id % LABEL_FONTS.length] : '"Noto Sans KR"';
-    const wordSz  = Math.max(16, 23 - (m.word?.length || 0) * 0.3);
+    const wordSz  = Math.max(10, (G.hangulSize || 32) - (m.word?.length || 0) * 0.3);
     ctx.font      = `bold ${wordSz}px ${fontFace}, sans-serif`;
     ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
     ctx.shadowColor   = 'rgba(0,0,0,1)';
@@ -2410,12 +3382,17 @@ function drawParts() {
 typing.addEventListener('keydown', e => {
   if (e.key !== 'Enter') return;
   e.preventDefault();
+  // Ice freeze: block typing but clear the field so input doesn't queue up
+  if (G.frozen) { typing.value = ''; return; }
   const val = typing.value.trim();
   typing.value = '';
   if (!val) return;
 
   // Cheat code
   if (val === 'cheatcode') { openCheatMenu(); return; }
+
+  // Try collect ground hanja item first
+  if (tryCollectHanja(val)) return;
 
   // Find closest (highest y) matching monster — include projectile monsters
   let best = null, bestY = -Infinity;
@@ -2432,6 +3409,20 @@ typing.addEventListener('keydown', e => {
   }
 });
 
+// Block copy/paste in typing field
+typing.addEventListener('copy',  e => e.preventDefault());
+typing.addEventListener('paste', e => e.preventDefault());
+typing.addEventListener('cut',   e => e.preventDefault());
+document.addEventListener('keydown', e => {
+  if (G.phase !== 'play') return;
+  if (e.ctrlKey && e.key === 'ArrowLeft')  { e.preventDefault(); invNavigate(-1); }
+  if (e.ctrlKey && e.key === 'ArrowRight') { e.preventDefault(); invNavigate(1); }
+  if (e.ctrlKey && e.key === ' ')          { e.preventDefault(); invUse(); }
+});
+document.getElementById('inv-prev').onclick = () => invNavigate(-1);
+document.getElementById('inv-next').onclick = () => invNavigate(1);
+document.getElementById('inv-use-hover').onclick = () => invUse();
+
 /* ================================================================
    WAVE MANAGEMENT
 ================================================================ */
@@ -2445,8 +3436,8 @@ function startWave(wn) {
   hwNum.textContent = wn;
   const nb = Math.ceil(wn/10)*10;
   hwBoss.textContent = wn%10===0
-    ? 'BOSS WAVE!'
-    : `Boss in ${nb-wn}`;
+    ? (G.koreanUI ? '보스 웨이브!' : 'BOSS WAVE!')
+    : (G.koreanUI ? `${nb-wn}웨이브 후 보스` : `Boss in ${nb-wn}`);
   ringArc.setAttribute('stroke-dasharray', '0 100');
   setBG(wn);
 
@@ -2456,8 +3447,8 @@ function startWave(wn) {
   const wxEmoji = WEATHER_ICONS[G.weather] || '🌞';
   const bossEmojiMsg = tmpls[0]?.bossEmoji || '🐉';
   const msg = wn%10===0
-    ? `${bossEmojiMsg} Wave ${wn}\nBOSS!`
-    : `화이팅!\nWave ${wn} ${wxEmoji}`;
+    ? (G.koreanUI ? `${bossEmojiMsg} 웨이브 ${wn}\n보스!` : `${bossEmojiMsg} Wave ${wn}\nBOSS!`)
+    : (G.koreanUI ? `화이팅!\n웨이브 ${wn} ${wxEmoji}` : `화이팅!\nWave ${wn} ${wxEmoji}`);
   announce(msg, () => {
     G.wPhase = 'spawning';
     initWaveSpawner(tmpls);
@@ -2473,17 +3464,44 @@ function waveComplete() {
     G.playerHP  = G.playerMax;
     refreshLives();
   }
+  // Wallet earnings per wave — base ~220원/wave, scales with wave number
+  let earned = Math.floor(200 + G.wave * 20 + Math.random() * 100);
+  if (G.shopMod_doubleWallet) earned *= 2;
+  if (G.shopMod_diamondRun) earned *= 2;
+  if (G.shopMod_haste) earned = Math.floor(earned * 1.5);
+  G.wallet = (G.wallet || 0) + earned;
+  G.sessionEarned = (G.sessionEarned || 0) + earned;
+  saveWallet();
   showConfetti();
-  setTimeout(() => startWave(G.wave + 1), 3600);
+  G.wdoneTimer = 3.6;
 }
+
+// Pending announce: { msg, cb, timer, fadeTimer, fadeDone }
+G.announceQ = null;
 
 function announce(msg, cb) {
   annTxt.innerHTML = msg.replace('\n', '<br>');
   annTxt.classList.add('on');
-  setTimeout(() => {
-    annTxt.classList.remove('on');
-    setTimeout(cb, 380);
-  }, 2100);
+  // Store in G so loop can drive it instead of setTimeout
+  G.announceQ = { cb, timer: 2.1, fading: false, fadeTimer: 0.38 };
+}
+
+function tickAnnounce(dt) {
+  if (!G.announceQ) return;
+  const q = G.announceQ;
+  if (!q.fading) {
+    q.timer -= dt;
+    if (q.timer <= 0) {
+      annTxt.classList.remove('on');
+      q.fading = true;
+    }
+  } else {
+    q.fadeTimer -= dt;
+    if (q.fadeTimer <= 0) {
+      G.announceQ = null;
+      q.cb();
+    }
+  }
 }
 
 function setBG(wn) {
@@ -2538,9 +3556,21 @@ function startGame() {
   const lv = parseInt(document.getElementById('inp-lives').value)||10;
   G.playerMax = Math.min(100, Math.max(1, lv));
   G.playerHP  = G.playerMax;
+  G.hangulSize     = Math.min(52, Math.max(18, parseInt(document.getElementById('inp-hangul-size')?.value) || 32));
+  G.koreanUI       = document.getElementById('chk-korean-ui')?.checked ?? false;
   G.varyFonts      = document.getElementById('chk-fonts')?.checked ?? true;
   G.weatherEnabled = document.getElementById('chk-weather')?.checked ?? true;
-  G.hero      = computeHeroEmoji();
+  G.hanjaEnabled   = document.getElementById('chk-hanja')?.checked ?? true;
+  initPowerupState();
+  // Reset session modifier flags
+  G.shopMod_doubleWallet = false; G.shopMod_magnetItems = false;
+  G.shopMod_haste = false; G.shopMod_tripleDrops = false;
+  G.shopMod_slowStart = false; G.shopMod_diamondRun = false;
+  G.sessionEarned = 0;
+  saveShopCounts({}); // reset prices each run
+  // Apply after shop purchases
+  applyShopPurchases();
+  startWave(1);  G.hero      = computeHeroEmoji();
   G.score     = 0;
   G.phase     = 'play';
   G.W  = window.innerWidth;
@@ -2564,12 +3594,19 @@ function startGame() {
 }
 
 function resetState() {
+  cheatMenu.classList.remove('on');
   G.phase = 'title';
   G.monsters=[]; G.projs=[]; G.parts=[];
   G.wTemplates=[];
   G.frozen = false; G.freezeTimer = 0;
   G.wxParticles = [];
   G.godMode = false;
+  G.announceQ = null; G.wdoneTimer = 0;
+  annTxt.classList.remove('on');
+  // Clear ground items
+  document.getElementById('ground-items').innerHTML = '';
+  document.getElementById('inv-hud').style.display = 'none';
+  hideBubble();
   freezeEl.classList.remove('on');
   hudEl.style.display='none';
   paEl.style.display='none';
@@ -2578,6 +3615,7 @@ function resetState() {
 }
 
 function endGame() {
+  cheatMenu.classList.remove('on');
   G.phase = 'over';
 
   // High score
@@ -2593,13 +3631,15 @@ function endGame() {
   const goHi = document.getElementById('go-hiscore');
 
   if (isNew) {
-    goTitle.textContent = '🏅 New Record!';
+    goTitle.textContent = G.koreanUI ? '🏅 신기록!' : '🏅 New Record!';
     showConfetti();
   } else {
     goTitle.textContent = '🪦 게임 오버';
   }
-  goDetail.textContent = `Wave ${G.wave}  •  Score: ${G.score.toLocaleString()}`;
-  goHi.textContent     = `Best: ${G.hiScore.toLocaleString()}`;
+  const wLbl = G.koreanUI ? '웨이브' : 'Wave';
+  const bLbl = G.koreanUI ? '최고' : 'Best';
+  goDetail.textContent = `${wLbl} ${G.wave}  •  💰 ${G.score.toLocaleString()}원`;
+  goHi.textContent     = `${bLbl}: ${G.hiScore.toLocaleString()}`;
 
   scrOver.classList.remove('off');
   hudEl.style.display='none';
@@ -2621,7 +3661,7 @@ window.addEventListener('resize', () => {
       goTitle.textContent='🪦 Window Resized';
       document.getElementById('go-detail').textContent=
         `Window was resized. Wave ${G.wave}  •  Score: ${G.score.toLocaleString()}`;
-      document.getElementById('go-hiscore').textContent=`Best: ${G.hiScore.toLocaleString()}`;
+      document.getElementById('go-hiscore').textContent=`${G.koreanUI?'최고':'Best'}: ${G.hiScore.toLocaleString()}`;
       scrOver.classList.remove('off');
       hudEl.style.display='none'; paEl.style.display='none';
     }
@@ -2657,17 +3697,496 @@ if ('visualViewport' in window) {
 }
 
 /* ================================================================
-   KEEP FOCUS
+   MOBILE SWIPE — horizontal = nav inventory; down = use item
+================================================================ */
+(function() {
+  let tx0 = 0, ty0 = 0, swiping = false;
+  document.addEventListener('touchstart', e => {
+    if (G.phase !== 'play') return;
+    // Ignore touches on input field
+    if (e.target === typing) return;
+    const t = e.touches[0];
+    tx0 = t.clientX; ty0 = t.clientY; swiping = true;
+  }, { passive: true });
+  document.addEventListener('touchend', e => {
+    if (!swiping || G.phase !== 'play') return;
+    swiping = false;
+    const t = e.changedTouches[0];
+    const dx = t.clientX - tx0;
+    const dy = t.clientY - ty0;
+    const absDx = Math.abs(dx), absDy = Math.abs(dy);
+    const minSwipe = 40;
+    if (absDx > absDy && absDx > minSwipe) {
+      // Horizontal swipe: navigate inventory
+      if (!G.inventory || !G.inventory.stacks.length) return;
+      invNavigate(dx > 0 ? 1 : -1);
+    } else if (absDy > absDx && dy > minSwipe) {
+      // Swipe down: use item
+      if (!G.inventory || !G.inventory.stacks.length) return;
+      invUse();
+    }
+  }, { passive: true });
+})();
+
+/* ================================================================
+   MOBILE KEYBOARD SCROLL FIX
+   When virtual keyboard opens it shrinks visualViewport but
+   the layout height doesn't change, causing empty scrollable space.
+   We clamp the outer container to the visual viewport height.
+================================================================ */
+if ('visualViewport' in window) {
+  function fixMobileScroll() {
+    document.body.style.height = window.visualViewport.height + 'px';
+    window.scrollTo(0, 0);
+  }
+  window.visualViewport.addEventListener('resize', fixMobileScroll);
+  window.visualViewport.addEventListener('scroll', () => { window.scrollTo(0, 0); });
+}
+
+/* ================================================================
+   KEEP FOCUS — auto-focus input while playing
 ================================================================ */
 document.addEventListener('pointerdown', e => {
   if (G.phase === 'play') typing.focus();
 });
+// Any key press while playing redirects to input (catches alt-tab back)
+document.addEventListener('keydown', e => {
+  if (G.phase !== 'play') return;
+  if (document.activeElement === typing) return;
+  // Don't steal focus for modifier-only keys or special combos
+  if (e.key === 'Tab' || e.key === 'Escape' || e.metaKey) return;
+  typing.focus();
+});
+
+/* ================================================================
+   KOREAN UI TRANSLATION
+================================================================ */
+const KO_UI = {
+  // Static DOM elements (selector → korean text)
+  dom: {
+    '#btn-play':              '▶ 게임 시작!',
+    '#btn-restart':           '↩ 다시 시도',
+    '#btn-resume':            '▶ 계속하기',
+    '#btn-menu':              '↩ 메인 메뉴',
+    '.pause-card h2':         '⏸ 일시정지',
+    '#shop-header-title':     '🛒 상점',
+    '.setup-wrap .scard:nth-child(2) h3': 'Weapon style', // skip weapon — already korean-ish
+  },
+  // Weapon group label translations
+  weaponLabels: {
+    'Magic':'마법', 'Love':'사랑', 'Fairy':'요정', 'Weapons':'무기',
+    'Fast Food':'패스트푸드', 'Ocean':'바다', 'Sweets':'과자', 'Bakery':'제과점',
+    'Elements':'원소', 'Hulk':'헐크', 'Fire':'불', 'Ice':'얼음',
+    'Animals':'동물', 'Vehicles':'탈것', 'Cyber':'사이버', 'Athlete':'스포츠',
+  },
+  skinLabel: 'Skin:',  skinLabelKo: '피부:',
+  genderLabel: 'Gender:', genderLabelKo: '성별:',
+  goptLabels: {
+    'inp-lives':        '❤️ 시작 생명',
+    'inp-hangul-size':  '🔡 한글 크기',
+    'chk-fonts':        '🔤 다양한 폰트',
+    'chk-korean-ui':    '🇰🇷 한/영',
+    'chk-hanja':        '🀄 한자 파워업',
+    'chk-weather':      '🌤️ 날씨',
+  },
+  // flashAnnounce / item names
+  itemNames: {
+    'Heal':         '치유',
+    'Golden Heart': '황금 하트',
+    'Stun':         '기절',
+    'Crit':         '치명타',
+    'Slow':         '감속',
+    'Auto-kill':    '즉사',
+    'Time Freeze':  '시간 정지',
+    '2x Score':     '2배 원',
+    'Mystery':      '미스터리',
+    'Cleave':       '참격',
+    'World Skip':   '🏯 웨이브 스킵',
+    'Iron Shield':  '철벽 방패',
+    'Gold Rush':    '황금 러쉬',
+    'Magnet':       '자석',
+    'Haste':        '가속',
+    'Lucky Drop':   '행운 드롭',
+    'Slow Start':   '느린 시작',
+    'Diamond Run':  '다이아 런',
+  },
+  // Wave announce substitutions
+  waveStart:    '화이팅!',
+  waveDone:     '잘했어요! 🎉',
+  // Announcements for powerups
+  announces: {
+    '❤️‍🩹 +2 HP!':        '❤️‍🩹 +2 체력!',
+    '💛 +1 Max Life!':    '💛 최대 생명 +1!',
+    '💛 Already at max!': '💛 이미 최대!',
+    '⚡ Stun bubble!':    '⚡ 기절 버블!',
+    '🔥 Crit x5!':        '🔥 치명타 x5!',
+    '⏱️ Slow 20s!':       '⏱️ 감속 20초!',
+    '🎯 Auto-kill!':       '🎯 즉사!',
+    '⏰ Time Freeze 5s!': '⏰ 시간 정지 5초!',
+    '🎁 2x Score 30s!':   '🎁 2배 원 30초!',
+    '⚔️ CLEAVE!':          '⚔️ 참격!',
+  },
+  // Shop section titles
+  shopSections: {
+    '🎒 Starting Items': '🎒 시작 아이템',
+    '✨ Run Modifiers':  '✨ 런 버프',
+  },
+  // Item descriptions (for shop tooltip)
+  shopDescs: {
+    'heal':      '시작 인벤토리에 +2 체력 아이템을 추가합니다.',
+    'slow':      '몬스터 속도를 20초간 40% 감소시키는 아이템으로 시작합니다.',
+    'stun':      '첫 번째 몬스터를 기절시키는 버블 아이템으로 시작합니다.',
+    'crit':      '5회 2배 데미지를 주는 치명타 아이템으로 시작합니다.',
+    'mystery':   '사용 시 무작위 효과를 발동하는 미스터리 아이템으로 시작합니다.',
+    'autokill':  '첫 번째 닿는 몬스터를 즉사시키는 아이템으로 시작합니다.',
+    'cleave':    '화면의 모든 몬스터를 즉시 처치하는 강력한 아이템으로 시작합니다.',
+    'worldskip': '시작 인벤토리에 월드 스킵 아이템을 추가합니다 — 즉시 +10 웨이브 점프!',
+    'mod_shield':'이번 런에 생명 3개 추가.',
+    'mod_gold':  '이번 런에 파도마다 원 2배 획득.',
+    'mod_magnet':'이번 런에 땅 아이템 지속시간 3배.',
+    'mod_haste': '몬스터 20% 빠름, 원 50% 추가 획득. 고위험 고수익!',
+    'mod_lucky': '이번 런에 아이템 드롭률 3배.',
+    'mod_tank':  '1-10 웨이브 몬스터 35% 느림. 초보자에게 좋음.',
+    'mod_big':   '모든 웨이브 보상 2배 + 모든 몬스터 체력 +1. 위험과 보상!',
+    'mod_worldskip': '런 시작 시 10 웨이브를 건너뜁니다. 더 강한 적, 더 큰 보상!',
+  },
+};
+
+function t(str) {
+  // Translate a flash announce string if Korean UI on
+  if (!G.koreanUI) return str;
+  return KO_UI.announces[str] || str;
+}
+
+function applyKoreanUI(on) {
+  // Titles / buttons
+  const pairs = [
+    ['#btn-play',     on ? '▶ 게임 시작!' : '▶ 게임 시작!'],  // already korean
+    ['#btn-restart',  on ? '↩ 다시 시도'  : '↩ Try Again'],
+    ['#btn-resume',   on ? '▶ 계속하기'   : '▶ Resume'],
+    ['#btn-menu',     on ? '↩ 메인 메뉴'  : '↩ Main Menu'],
+    ['#shop-header-title', on ? '🛒 상점' : '🛒 Shop'],
+  ];
+  pairs.forEach(([sel, txt]) => {
+    const el = document.querySelector(sel);
+    if (el) el.textContent = txt;
+  });
+  // Pause h2
+  const pauseH2 = document.querySelector('.pause-card h2');
+  if (pauseH2) pauseH2.textContent = on ? '⏸ 일시정지' : '⏸ Paused';
+  // well-done text
+  const wd = document.getElementById('well-done');
+  if (wd) wd.textContent = on ? '잘했어요! 🎉' : '잘했어요! 🎉'; // always korean
+  // gopt labels
+  const goptCards = document.querySelectorAll('.gopt-card');
+  const labelMap = {
+    '❤️ Starting Lives': '❤️ 시작 생명',
+    '🔡 한글 Size':       '🔡 한글 크기',
+    '🔤 Varying Fonts':   '🔤 다양한 폰트',
+    '🇰🇷 한/영':          '🇰🇷 한/영',
+    '🀄 Hanja Powerups':  '🀄 한자 파워업',
+    '🌤️ Weather':         '🌤️ 날씨',
+  };
+  const labelMapRev = Object.fromEntries(Object.entries(labelMap).map(([k,v])=>[v,k]));
+  goptCards.forEach(card => {
+    const lbl = card.querySelector('.gopt-label');
+    if (!lbl) return;
+    const cur = lbl.textContent;
+    if (on) { const ko = labelMap[cur]; if (ko) lbl.textContent = ko; }
+    else    { const en = labelMapRev[cur]; if (en) lbl.textContent = en; }
+  });
+  // Weapon card h3
+  const weaponH3 = document.querySelector('#wg-pick')?.closest('.scard')?.querySelector('h3');
+  if (weaponH3) weaponH3.textContent = on ? '무기 스타일' : 'Weapon style';
+  // Weapon group labels
+  document.querySelectorAll('.wg-lbl').forEach(el => {
+    const cur = el.textContent;
+    if (on) {
+      const ko = KO_UI.weaponLabels[cur]; if (ko) el.textContent = ko;
+    } else {
+      const en = Object.entries(KO_UI.weaponLabels).find(([,v])=>v===cur);
+      if (en) el.textContent = en[0];
+    }
+  });
+  // Skin/gender labels
+  document.querySelectorAll('.skin-group label').forEach(el => {
+    if (el.textContent.includes('Skin') || el.textContent.includes('피부')) el.textContent = on ? '피부:' : 'Skin:';
+    if (el.textContent.includes('Gender') || el.textContent.includes('성별')) el.textContent = on ? '성별:' : 'Gender:';
+  });
+  // Title screen card headings
+  const heroH3 = document.querySelector('.setup-wrap .scard.wide h3');
+  if (heroH3) heroH3.textContent = on ? '영웅 선택' : 'Choose your hero';
+  const weapH3 = document.querySelector('.setup-wrap .scard:not(.wide):not(#scard-options) h3');
+  if (weapH3) weapH3.textContent = on ? '무기 스타일' : 'Weapon style';
+  const optsH3 = document.querySelector('#scard-options h3');
+  if (optsH3) optsH3.textContent = on ? '게임 설정' : 'Game Options';
+  // Weapon buttons
+  wgpick.querySelectorAll('.wgbtn').forEach(b => {
+    const wg = WEAPONS[b.dataset.wkey];
+    if (!wg) return;
+    const lbl = b.querySelector('.wg-lbl');
+    if (lbl) lbl.textContent = on ? (wg.ko || wg.label) : wg.label;
+  });
+  // Skin / gender row labels
+  const skinLbl = document.querySelector('#skin-row .skin-group:first-child label');
+  if (skinLbl) skinLbl.textContent = on ? '피부:' : 'Skin:';
+  const genderLbl = document.querySelector('#gender-group label');
+  if (genderLbl) genderLbl.textContent = on ? '성별:' : 'Gender:';
+  // HUD labels
+  const hudWaveLbl = document.querySelector('#hcard-wave .hlbl');
+  if (hudWaveLbl) hudWaveLbl.textContent = on ? '웨이브' : 'Wave';
+  const hudMoneyLbl = document.querySelector('#hcard-score .hlbl');
+  if (hudMoneyLbl) hudMoneyLbl.textContent = '💰 원';
+  const bestLbl = document.getElementById('hs-best-lbl');
+  if (bestLbl) bestLbl.textContent = on ? '최고' : 'Best';
+  // Best: row — update text node before the span
+  const bestRow = document.getElementById('hs-best-row');
+  if (bestRow) {
+    const span = bestRow.querySelector('#hs-best');
+    bestRow.childNodes[0].textContent = on ? '최고: ' : 'Best: ';
+  }
+  // Restart button
+  const btnRestart = document.getElementById('btn-restart');
+  if (btnRestart) btnRestart.textContent = on ? '↩ 다시 시도' : '↩ Try Again';
+  // Render shop in new language
+  if (document.getElementById('shop-card')?.classList.contains('open')) renderShop();
+}
+
+// Patch flashAnnounce to translate if needed
+const _origFlashAnnounce = window.flashAnnounce;
+
+/* ================================================================
+   SHOP SYSTEM
+================================================================ */
+const SHOP_ITEMS = [
+  // ── Consumables (starting inventory) ──────────────────────────
+  { id:'heal',      emoji:'❤️‍🩹', name:'Heal',       basePrice:500,  type:'consumable', inv:'❤️‍🩹',
+    desc:'Start with a +2 HP heal in your inventory.' },
+  { id:'slow',      emoji:'⏱️',  name:'Slow',       basePrice:800,  type:'consumable', inv:'⏱️',
+    desc:'Start with a Slow item — reduces monster speed 40% for 20s.' },
+  { id:'stun',      emoji:'⚡',   name:'Stun',       basePrice:1000, type:'consumable', inv:'⚡',
+    desc:'Start with a Stun bubble — stuns the first monster it hits.' },
+  { id:'crit',      emoji:'🔥',   name:'Crit',       basePrice:1500, type:'consumable', inv:'🔥',
+    desc:'Start with a Crit shot — deals 2x damage for 5 hits.' },
+  { id:'mystery',   emoji:'🎲',   name:'Mystery',    basePrice:2000, type:'consumable', inv:'🎲',
+    desc:'Start with a Mystery item — effect revealed on use!' },
+  { id:'autokill',  emoji:'🎯',   name:'Auto-kill',  basePrice:3000, type:'consumable', inv:'🎯',
+    desc:'Start with an Auto-kill — the first monster it touches dies instantly.' },
+  { id:'cleave',    emoji:'⚔️',  name:'Cleave',     basePrice:8000, type:'consumable', inv:'⚔️',
+    desc:'Start with a Cleave — instantly kills ALL monsters on screen. Rare & powerful.' },
+  { id:'worldskip', emoji:'🏯',  name:'World Skip', basePrice:12000, type:'consumable', inv:'🏯',
+    desc:'Start with a World Skip — instantly jumps +10 waves forward. Use wisely!' },
+  // ── Run Modifiers ──────────────────────────────────────────────
+  { id:'mod_shield', emoji:'🛡️', name:'Iron Shield', basePrice:1500, type:'modifier',
+    desc:'Start with 3 extra lives this run.', effect:'extraLives3' },
+  { id:'mod_gold',   emoji:'💰', name:'Gold Rush',   basePrice:2000, type:'modifier',
+    desc:'Earn 2x 원 per wave this run.', effect:'doubleWallet' },
+  { id:'mod_magnet', emoji:'🧲', name:'Magnet',      basePrice:2500, type:'modifier',
+    desc:'Ground items last 3x longer this run.', effect:'magnetItems' },
+  { id:'mod_haste',  emoji:'⏩', name:'Haste',       basePrice:3000, type:'modifier',
+    desc:'Monsters move 20% faster but you earn 50% more 원. High risk, high reward.',
+    effect:'haste' },
+  { id:'mod_lucky',  emoji:'🍀', name:'Lucky Drop',  basePrice:3500, type:'modifier',
+    desc:'Item drop rate tripled this run.', effect:'tripleDrops' },
+  { id:'mod_tank',   emoji:'🐢', name:'Slow Start',  basePrice:4000, type:'modifier',
+    desc:'Wave 1-10 monsters move 35% slower. Great for beginners.', effect:'slowStart' },
+  { id:'mod_big',    emoji:'💎', name:'Diamond Run', basePrice:6000, type:'modifier',
+    desc:'All wave rewards doubled AND all monsters have +1 HP. Risk meets reward.',
+    effect:'diamondRun' },
+];
+
+const SHOP_MODIFIERS_KEY = 'kth_shop_mods';
+
+// Counts per item id (how many times purchased — for price doubling)
+function getShopCounts() {
+  try { return JSON.parse(localStorage.getItem('kth_shop_counts') || '{}'); }
+  catch { return {}; }
+}
+function saveShopCounts(counts) {
+  localStorage.setItem('kth_shop_counts', JSON.stringify(counts));
+}
+
+function shopItemPrice(item) {
+  const counts = getShopCounts();
+  const n = counts[item.id] || 0;
+  return item.basePrice * Math.pow(2, n);
+}
+
+let _shopModalItem = null;
+function openShopModal(item) {
+  _shopModalItem = item;
+  const price = shopItemPrice(item);
+  const ko = document.getElementById('chk-korean-ui')?.checked || G.koreanUI || false;
+  const iName = ko ? (KO_UI.itemNames[item.name] || item.name) : item.name;
+  const iDesc = ko ? (KO_UI.shopDescs[item.id] || item.desc) : item.desc;
+  document.getElementById('shop-modal-emoji').textContent  = item.emoji;
+  document.getElementById('shop-modal-name').textContent   = iName;
+  document.getElementById('shop-modal-desc').textContent   = iDesc;
+  document.getElementById('shop-modal-buy').textContent    = `✓ ${price.toLocaleString()}원`;
+  document.getElementById('shop-modal-cancel').textContent = '✕';
+  document.getElementById('shop-modal').classList.remove('off');
+}
+function closeShopModal() {
+  document.getElementById('shop-modal').classList.add('off');
+  _shopModalItem = null;
+}
+function confirmShopBuy() {
+  if (_shopModalItem) buyShopItem(_shopModalItem);
+  closeShopModal();
+}
+
+function shopItemClick(item, canAfford, isMobile) {
+  if (!canAfford) return;
+  if (isMobile) openShopModal(item);
+  else buyShopItem(item);
+}
+
+function isShopMobile() { return window.innerWidth < 600; }
+
+function toggleShop() {
+  document.getElementById('shop-card').classList.toggle('open');
+  renderShop();
+}
+
+const _shopTooltip = document.getElementById('shop-tooltip');
+function showShopTooltip(el, text, cantAfford) {
+  // Split off last "not enough" line and italicize it
+  const parts = text.split(/\n\nNot enough 원|\n\n원 부족/);
+  const suffix = text.includes('Not enough 원') ? 'Not enough 원' : text.includes('원 부족') ? '원 부족' : null;
+  _shopTooltip.innerHTML = parts[0].replace(/\n/g,'<br>') +
+    (suffix ? `<br><br><em style="opacity:.7">${suffix}</em>` : '');
+  _shopTooltip.classList.add('show');
+  const r = el.getBoundingClientRect();
+  let top = r.top - 10;
+  let left = r.left + r.width/2;
+  _shopTooltip.style.transform = 'translate(-50%, -100%)';
+  _shopTooltip.style.left = left + 'px';
+  _shopTooltip.style.top  = top + 'px';
+}
+function hideShopTooltip() { _shopTooltip.classList.remove('show'); }
+
+function renderShop() {
+  const body = document.getElementById('shop-body');
+  if (!body) return;
+  hideShopTooltip();
+  const counts = getShopCounts();
+  const wallet = G.wallet || 0;
+  // Read Korean UI state from checkbox (works before game starts too)
+  const ko = document.getElementById('chk-korean-ui')?.checked || G.koreanUI || false;
+
+  const consumables = SHOP_ITEMS.filter(i => i.type === 'consumable');
+  const mods = SHOP_ITEMS.filter(i => i.type === 'modifier');
+
+  body.innerHTML = `
+    <div class="shop-section-title">${ko ? '🎒 시작 아이템' : '🎒 Starting Items'}</div>
+    <div class="shop-grid" id="shop-consumables"></div>
+    <div class="shop-section-title">${ko ? '✨ 런 버프' : '✨ Run Modifiers'}</div>
+    <div class="shop-grid" id="shop-modifiers"></div>
+  `;
+
+  const sections = [
+    { id: '#shop-consumables', list: consumables, onePerRun: false },
+    { id: '#shop-modifiers',   list: mods,        onePerRun: true  },
+  ];
+  sections.forEach(({ id, list, onePerRun }) => {
+    const grid = body.querySelector(id);
+    list.forEach(item => {
+      const price = shopItemPrice(item);
+      const owned = counts[item.id] || 0;
+      const alreadyBought = onePerRun && owned > 0;
+      const canAfford = wallet >= price && !alreadyBought;
+      const iName = ko ? (KO_UI.itemNames[item.name] || item.name) : item.name;
+      const iDesc = ko ? (KO_UI.shopDescs[item.id] || item.desc) : item.desc;
+      const priceNext = item.basePrice * Math.pow(2, owned + 1);
+      const div = document.createElement('div');
+      div.className = 'shop-item' + (!canAfford ? ' sold-out' : '');
+      const priceLabel = alreadyBought
+        ? (ko ? '구매됨' : 'Bought')
+        : `${price.toLocaleString()}원`;
+      // Consumables show ×N count; modifiers show ✓ once bought
+      const badge = onePerRun
+        ? (owned > 0 ? `<div class="shop-item-count">✓</div>` : '')
+        : (owned > 0 ? `<div class="shop-item-count">×${owned}</div>` : '');
+      div.innerHTML = `
+        <div class="shop-item-emoji">${item.emoji}</div>
+        <div class="shop-item-name">${iName}</div>
+        <div class="shop-item-price">${priceLabel}</div>
+        ${badge}
+      `;
+      div.addEventListener('mouseenter', () => {
+        const nextMsg = !onePerRun && owned > 0 ? (ko ? `\n다음: ${priceNext.toLocaleString()}원` : `\nNext: ${priceNext.toLocaleString()}원`) : '';
+        const cantMsg = !canAfford && !alreadyBought
+          ? (ko ? '\n\n원 부족' : '\n\nNot enough 원') : '';
+        showShopTooltip(div, iDesc + nextMsg + cantMsg, !canAfford && !alreadyBought);
+      });
+      div.addEventListener('mouseleave', () => { hideShopTooltip(); });
+      if (canAfford) {
+        div.addEventListener('click', () => shopItemClick(item, canAfford, isShopMobile()));
+      }
+      grid.appendChild(div);
+    });
+  });
+}
+
+function buyShopItem(item) {
+  const price = shopItemPrice(item);
+  if ((G.wallet || 0) < price) return;
+  G.wallet -= price;
+  saveWallet();
+  const counts = getShopCounts();
+  counts[item.id] = (counts[item.id] || 0) + 1;
+  saveShopCounts(counts);
+  // Store purchased items/mods for next run
+  const pending = JSON.parse(localStorage.getItem('kth_pending_shop') || '{"items":[],"mods":[]}');
+  if (item.type === 'consumable') pending.items.push(item.inv);
+  else pending.mods.push(item.effect);
+  localStorage.setItem('kth_pending_shop', JSON.stringify(pending));
+  hideShopTooltip();
+  renderShop();
+  updateShopWalletDisplay();
+  const boughtMsg = G.koreanUI ? `${item.emoji} 구매 완료!` : `Bought ${item.emoji}!`;
+  flashAnnounce && flashAnnounce(boughtMsg, '#ffe066');
+}
+
+function applyShopPurchases() {
+  // Called at game start — apply pending items and modifiers
+  try {
+    const pending = JSON.parse(localStorage.getItem('kth_pending_shop') || '{"items":[],"mods":[]}');
+    // Give starting items to inventory
+    for (const inv of (pending.items || [])) addToInventory(inv);
+    // Apply modifiers
+    for (const eff of (pending.mods || [])) {
+      switch(eff) {
+        case 'extraLives3':   G.playerMax = Math.min(100, G.playerMax+3); G.playerHP = Math.min(G.playerMax, G.playerHP+3); refreshLives(); break;
+        case 'doubleWallet':  G.shopMod_doubleWallet = true; break;
+        case 'magnetItems':   G.shopMod_magnetItems = true; break;
+        case 'haste':         G.shopMod_haste = true; break;
+        case 'tripleDrops':   G.shopMod_tripleDrops = true; break;
+        case 'slowStart':     G.shopMod_slowStart = true; break;
+        case 'diamondRun':    G.shopMod_diamondRun = true; break;
+      }
+    }
+    // Clear pending
+    localStorage.removeItem('kth_pending_shop');
+  } catch(e) {}
+}
+
+function initShop() {
+  updateShopWalletDisplay();
+  // Render if already open
+  if (document.getElementById('shop-card')?.classList.contains('open')) renderShop();
+}
 
 /* ================================================================
    INIT
 ================================================================ */
 resizeCv();
 setBG(1);
+loadHeroPrefs();
+initShop();
+// Korean UI toggle
+const chkKoUI = document.getElementById('chk-korean-ui');
+if (chkKoUI) chkKoUI.addEventListener('change', () => applyKoreanUI(chkKoUI.checked));
 </script>
 </body>
 </html>
