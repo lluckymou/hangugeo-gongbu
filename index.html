@@ -1,298 +1,66 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>한국말 공부</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@400;700;800&display=swap" rel="stylesheet">
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🇰🇷</text></svg>">
-    <link rel="stylesheet" href="assets/config.css">
-    <link rel="stylesheet" href="assets/shared.css">
-    <style>
-        .container {
-            max-width: 800px;
-            box-shadow: none;
-            background: none;
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=5" />
+  <meta name="theme-color" content="#C60C30" />
+  <meta name="description" content="Hangugeo — A Korean Learning Tool with dictionary, flashcards, numbers, colors, pronunciation, romanization, and hanja." />
+  <title>한국말 공부 · Hangugeo</title>
 
-        .header {
-            text-align: center;
-            margin-bottom: 50px;
-            animation: fadeInDown 0.6s ease;
-        }
+  <!-- Google Fonts: Korean-capable fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Nanum+Gothic:wght@400;700;800&family=Nanum+Myeongjo:wght@400;700;800&family=Noto+Serif+TC:wght@400;700&family=Yuji+Boku&display=swap" rel="stylesheet" />
 
-        @keyframes fadeInDown {
-            from {
-                opacity: 0;
-                transform: translateY(-20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
+  <!-- Font Awesome 4.7 (local) -->
+  <link rel="stylesheet" href="assets/fonts/font-awesome.min.css" />
 
-        .logo {
-            font-size: 80px;
-            margin-bottom: 20px;
-            animation: bounce 5s ease infinite;
-        }
-
-        @keyframes bounce {
-            0%, 100% {
-                transform: translateY(0);
-            }
-            50% {
-                transform: translateY(-5px);
-            }
-        }
-
-        h1 {
-            color: var(--text-light);
-            font-size: 42px;
-            margin-bottom: 10px;
-            font-weight: 800;
-            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-        }
-
-        .subtitle {
-            color: var(--text-light);
-        }
-
-        .tools-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 25px;
-            margin-bottom: 40px;
-        }
-
-        .tool-card {
-            background: var(--white);
-            border-radius: var(--border-radius);
-            padding: 30px;
-            text-align: center;
-            cursor: pointer;
-            transition: var(--transition);
-            box-shadow: var(--shadow);
-            text-decoration: none;
-            color: inherit;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-height: 200px;
-            animation-fill-mode: both;
-        }
-
-        .tool-card:not(.coming-soon) {
-            animation: fadeInUp 0.6s ease;
-        }
-
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        @keyframes fadeInUpComingSoon {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 0.6;
-                transform: translateY(0);
-            }
-        }
-
-        .tool-card:hover {
-            transform: translateY(-10px);
-            box-shadow: var(--shadow-hover);
-        }
-
-        .tool-icon {
-            font-size: 64px;
-            margin-bottom: 20px;
-            display: block;
-            transition: transform 0.3s ease;
-        }
-
-        .tool-card:hover .tool-icon {
-            transform: scale(1.2) rotate(5deg);
-        }
-
-        .tool-title {
-            font-size: 24px;
-            font-weight: 700;
-            color: var(--text-color);
-            margin-bottom: 8px;
-        }
-
-        .tool-description {
-            font-size: 14px;
-            color: #718096;
-            line-height: 1.5;
-        }
-
-        .coming-soon {
-            opacity: 0.6;
-            animation: fadeInUpComingSoon 0.6s ease;
-            cursor: not-allowed;
-        }
-
-        .coming-soon:hover {
-            transform: none;
-            box-shadow: var(--shadow);
-        }
-
-        .coming-soon .tool-icon {
-            filter: grayscale(50%);
-        }
-
-        .coming-soon:hover .tool-icon {
-            transform: none;
-        }
-
-        .coming-soon-badge {
-            display: inline-block;
-            background: #edf2f7;
-            color: #718096;
-            padding: 4px 12px;
-            border-radius: 12px;
-            font-size: 11px;
-            font-weight: 600;
-            margin-top: 10px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .footer {
-            text-align: center;
-            color: var(--text-light);
-            font-size: 14px;
-            margin-top: 40px;
-            opacity: 0.9;
-            animation: fadeIn 1s ease 0.8s;
-            animation-fill-mode: both;
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-            }
-            to {
-                opacity: 0.9;
-            }
-        }
-
-        .footer a {
-            color: var(--text-light);
-            text-decoration: none;
-            font-weight: 600;
-            transition: opacity 0.3s ease;
-        }
-
-        .footer a:hover {
-            opacity: 0.7;
-        }
-
-        @media (min-width: 900px) {
-            .tools-grid {
-                grid-template-columns: repeat(3, 1fr);
-            }
-        }
-
-        @media (max-width: 600px) {
-            .tools-grid {
-                grid-template-columns: 1fr;
-                gap: 20px;
-            }
-
-            h1 {
-                font-size: 32px;
-            }
-
-            .logo {
-                font-size: 60px;
-            }
-
-            .tool-card {
-                padding: 35px 25px;
-                min-height: 180px;
-            }
-
-            .tool-icon {
-                font-size: 56px;
-            }
-
-            .tool-title {
-                font-size: 22px;
-            }
-        }
-    </style>
+  <link rel="manifest" href="manifest.json" />
+  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg" />
+  <link rel="apple-touch-icon" href="assets/hangugeo.png" />
+  <link rel="stylesheet" href="assets/css/styles.css" />
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <div class="logo">🇰🇷</div>
-            <h1>Korean Learning Tools</h1>
-            <p class="subtitle">Choose a tool to practice your Korean skills</p>
+  <div class="app">
+    <!-- Header: brand + language selector -->
+    <header class="header">
+      <div class="brand" id="brand">
+        <div class="logo">🇰🇷</div>
+        <div>
+          <div class="title">한국말 공부</div>
+          <div class="subtitle" id="appSubtitle"></div>
         </div>
+      </div>
+      <div class="lang" id="langSel"></div>
+    </header>
 
-        <div class="tools-grid">
-            <a href="apps/romanizer.html" class="tool-card">
-                <span class="tool-icon">R</span>
-                <h2 class="tool-title">한글 Romanizer</h2>
-                <p class="tool-description">Convert Korean Hangul to romanized text</p>
-            </a>
+    <!-- Banners (data status + vocabulary queue lock) -->
+    <div id="bannerHost"></div>
 
-            <a href="apps/hangeul-writer.html" class="tool-card">
-                <span class="tool-icon">한</span>
-                <h2 class="tool-title">한글 Writer</h2>
-                <p class="tool-description">Write in Latin script and see it in Hangul</p>
-            </a>
+    <!-- Main routed view -->
+    <main id="main"></main>
+  </div>
 
-            <a href="apps/hanja.html" class="tool-card">
-                <span class="tool-icon">漢</span>
-                <h2 class="tool-title">Hanja Practice</h2>
-                <p class="tool-description">Learn Chinese characters used in Korean language</p>
-            </a>
+  <!-- Hangul.js: Korean text processing (kept from original) -->
+  <script src="assets/hangul.js"></script>
 
-            <a href="apps/pronunciation.html" class="tool-card">
-                <span class="tool-icon">🎤</span>
-                <h2 class="tool-title">Pronunciation Practice</h2>
-                <p class="tool-description">Practice and compare Korean pronunciation</p>
-            </a>
+  <!-- Core libs (order matters) -->
+  <script src="assets/js/i18n.js"></script>
+  <script src="assets/js/icons.js"></script>
+  <script src="assets/js/ui.js"></script>
+  <script src="assets/js/store.js"></script>
+  <script src="assets/js/tts.js"></script>
+  <script src="assets/js/staticdata.js"></script>
 
-            <a href="apps/numbers.html" class="tool-card">
-                <span class="tool-icon">🔢</span>
-                <h2 class="tool-title">Numbers Practice</h2>
-                <p class="tool-description">Learn numbers in Sino and Native systems</p>
-            </a>
+  <!-- Hanja data: full character database + utils (272KB) -->
+  <script src="assets/hanja-utils.js"></script>
+  <script src="assets/hanja.js"></script>
 
-            <a href="apps/colors.html" class="tool-card">
-                <span class="tool-icon">🎨</span>
-                <h2 class="tool-title">Colors Practice</h2>
-                <p class="tool-description">Learn color names and their variations</p>
-            </a>
+  <!-- Full dictionary dataset (13,669 words, ~2MB) -->
+  <script src="assets/hangugeo_data.js"></script>
+  <script src="assets/js/lexicon.js"></script>
 
-            <a href="apps/typing-game.html" class="tool-card">
-                <span class="tool-icon">⌨️</span>
-                <h2 class="tool-title">Typing Game</h2>
-                <p class="tool-description">Improve your Korean typing skills</p>
-            </a>
-        </div>
-
-        <div class="footer">
-            Built with care by <a href="https://github.com/lluckymou" target="_blank">llucmou 🌲</a>
-        </div>
-    </div>
+  <!-- App + modules -->
+  <script src="assets/js/app.js"></script>
 </body>
 </html>

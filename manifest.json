@@ -1,0 +1,19 @@
+{
+  "name": "한국말 공부 — Korean Learning Tools",
+  "short_name": "한국말 공부",
+  "description": "Korean learning portal: flashcards, numbers, colors, pronunciation, romanization, hanja, and stats.",
+  "lang": "ko",
+  "dir": "ltr",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f8f9fa",
+  "theme_color": "#C60C30",
+  "categories": ["education", "productivity"],
+  "icons": [
+    { "src": "assets/hangugeo.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "assets/hangugeo.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "assets/hangugeo.png", "sizes": "1024x1024", "type": "image/png", "purpose": "maskable" }
+  ]
+}
